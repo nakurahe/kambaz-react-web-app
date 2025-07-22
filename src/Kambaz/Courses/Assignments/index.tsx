@@ -3,8 +3,13 @@ import { FaPlus } from "react-icons/fa6";
 import { BsGripVertical } from "react-icons/bs";
 import { ListGroup } from "react-bootstrap";
 import GreenCheckmark from "../Modules/GreenCheckmark";
+import { useParams } from "react-router";
+import * as db from "../../Database";
 
 export default function Assignments() {
+    const { cid } = useParams();
+    const assignments = db.assignments.filter((assignment: any) => assignment.course === cid);
+
     return (
         <div id="wd-assignments">
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -19,7 +24,10 @@ export default function Assignments() {
                     />
                 </div>
                 <div>
-                    <button id="wd-add-assignment-group" className="btn btn-secondary btn-lg me-2">+ Group</button>
+                    <button id="wd-add-assignment-group" className="btn btn-secondary btn-lg me-2">
+                        <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                        Group
+                    </button>
                     <button id="wd-add-assignment" className="btn btn-danger btn-lg">
                         <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
                         Assignment
@@ -35,48 +43,23 @@ export default function Assignments() {
                         </button>
                     </div>
                     <ListGroup className="wd-lessons rounded-0">
-                        <ListGroup.Item className="wd-lesson p-3 ps-1">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <BsGripVertical className="me-2" />
-                                    <a href="#/Kambaz/Courses/1234/Assignments/123" className="wd-assignment-link text-decoration-none">
-                                        A1 - ENV + HTML
-                                    </a>
+                        {assignments.map((assignment: any) => (
+                            <ListGroup.Item key={assignment._id} className="wd-lesson p-3 ps-1">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <BsGripVertical className="me-2" />
+                                        <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} 
+                                           className="wd-assignment-link text-decoration-none">
+                                            {assignment.title}
+                                        </a>
+                                    </div>
+                                    <GreenCheckmark />
                                 </div>
-                                <GreenCheckmark />
-                            </div>
-                            <div className="wd-assignment-list-item-description text-muted small ms-4">
-                                Multiple Modules | <b>Not available until</b> May 6 at 12:00am | <b>Due</b> May 13 at 11:59pm | <b>100 pts</b>
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="wd-lesson p-3 ps-1">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <BsGripVertical className="me-2" />
-                                    <a href="#/Kambaz/Courses/1234/Assignments/124" className="wd-assignment-link text-decoration-none">
-                                        A2 - CSS + BOOTSTRAP
-                                    </a>
+                                <div className="wd-assignment-list-item-description text-muted small ms-4">
+                                    Multiple Modules | <b>Not available until</b> May 6 at 12:00am | <b>Due</b> May 13 at 11:59pm | <b>100 pts</b>
                                 </div>
-                                <GreenCheckmark />
-                            </div>
-                            <div className="wd-assignment-list-item-description text-muted small ms-4">
-                                Multiple Modules | <b>Not available until</b> May 13 at 12:00am | <b>Due</b> May 20 at 11:59pm | <b>100 pts</b>
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="wd-lesson p-3 ps-1">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <BsGripVertical className="me-2" />
-                                    <a href="#/Kambaz/Courses/1234/Assignments/125" className="wd-assignment-link text-decoration-none">
-                                        A3 - JAVASCRIPT + REACT
-                                    </a>
-                                </div>
-                                <GreenCheckmark />
-                            </div>
-                            <div className="wd-assignment-list-item-description text-muted small ms-4">
-                                Multiple Modules | <b>Not available until</b> May 20 at 12:00am | <b>Due</b> May 27 at 11:59pm | <b>100 pts</b>
-                            </div>
-                        </ListGroup.Item>
+                            </ListGroup.Item>
+                        ))}
                     </ListGroup>
                 </ListGroup.Item>
             </ListGroup>

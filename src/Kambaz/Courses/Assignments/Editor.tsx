@@ -1,16 +1,31 @@
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
+import { useParams, Link } from "react-router";
+import * as db from "../../Database";
 
 export default function AssignmentEditor() {
+    const { cid, aid } = useParams();
+    const assignment = db.assignments.find((a: any) => a._id === aid);
+
+    if (!assignment) {
+        return (
+            <div id="wd-assignments-editor">
+                <h3>Assignment not found</h3>
+                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-secondary">
+                    Back to Assignments
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div id="wd-assignments-editor">
             <Form.Group controlId="wd-name">
                 <Form.Label>Assignment Name</Form.Label>
-                <Form.Control type="text" defaultValue="A1 - ENV + HTML" />
+                <Form.Control type="text" defaultValue={assignment.title} />
             </Form.Group>
             <Form.Group controlId="wd-description">
                 <Form.Label>Description</Form.Label>
-                <Form.Control as="textarea" rows={5} defaultValue="The assignment is available online Submit a link to the landing page of your Web application running on Netlify. The landing page should include the following: Your full name and section Links to each of the lab assignments Link to the Kanbas application Links to all relevant source code repositories. The Kanbas application should include a link to navigate back to the landing page." />
+                <Form.Control as="textarea" rows={5} defaultValue={assignment.description || "No description available"} />
             </Form.Group>
             <br />
             
@@ -19,7 +34,7 @@ export default function AssignmentEditor() {
                     Points
                 </Form.Label>
                 <div className="col-sm-10">
-                    <Form.Control id="wd-points" type="number" defaultValue={100} />
+                    <Form.Control id="wd-points" type="number" defaultValue={assignment.points || 100} />
                 </div>
             </Form.Group>
 
@@ -84,20 +99,20 @@ export default function AssignmentEditor() {
                         
                         <Form.Group className="mb-3">
                             <Form.Label htmlFor="wd-due-date">Due</Form.Label>
-                            <Form.Control id="wd-due-date" type="date" defaultValue="2024-05-13" />
+                            <Form.Control id="wd-due-date" type="date" defaultValue={assignment.dueDate || "2024-05-13"} />
                         </Form.Group>
                         
                         <div className="row">
                             <div className="col-md-6">
                                 <Form.Group>
                                     <Form.Label htmlFor="wd-available-from">Available From</Form.Label>
-                                    <Form.Control id="wd-available-from" type="date" defaultValue="2024-05-06" />
+                                    <Form.Control id="wd-available-from" type="date" defaultValue={assignment.availableFrom || "2024-05-06"} />
                                 </Form.Group>
                             </div>
                             <div className="col-md-6">
                                 <Form.Group>
                                     <Form.Label htmlFor="wd-available-until">Until</Form.Label>
-                                    <Form.Control id="wd-available-until" type="date" defaultValue="2024-05-20" />
+                                    <Form.Control id="wd-available-until" type="date" defaultValue={assignment.availableUntil || "2024-05-20"} />
                                 </Form.Group>
                             </div>
                         </div>
@@ -106,8 +121,8 @@ export default function AssignmentEditor() {
             </Form.Group>
             <hr />
             <div className="text-end">
-                <Button variant="secondary" className="me-2">Cancel</Button>
-                <Button variant="danger">Save</Button>
+                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-secondary me-2">Cancel</Link>
+                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-danger">Save</Link>
             </div>
         </div>
     );
