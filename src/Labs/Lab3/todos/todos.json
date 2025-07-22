@@ -1,0 +1,17 @@
+[
+    {
+        "title": "Buy milk",
+        "status": "COMPLETED",
+        "done": true
+    },
+    {
+        "title": "Walk the dog",
+        "status": "PENDING",
+        "done": false
+    },
+    {
+        "title": "Do laundry",
+        "status": "PENDING",
+        "done": false
+    }
+]
