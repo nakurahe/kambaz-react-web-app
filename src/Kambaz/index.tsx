@@ -11,7 +11,7 @@ export default function Kambaz() {
             <KambazNavigation />
             <div className="wd-main-content-offset p-3">
                 <Routes>
-                    <Route path="/" element={<Navigate to="/Kambaz/Account" />} />
+                    <Route path="/" element={<Navigate to="Account" />} />
                     <Route path="/Account/*" element={<Account />} />
                     <Route path="/Dashboard" element={<Dashboard />} />
                     <Route path="/Courses" element={<Navigate to="/Kambaz/Courses/1234/Home" />} />
