@@ -7,7 +7,8 @@ const store = configureStore({
     reducer: {
         helloReducer,
         counterReducer,
-        addReducer
+        addReducer,
+        
     },
 });
 export default store;
