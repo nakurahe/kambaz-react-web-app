@@ -12,6 +12,7 @@ export default function Modules() {
     const [moduleName, setModuleName] = useState("");
     const { modules } = useSelector((state: any) => state.modulesReducer);
     const dispatch = useDispatch();
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
 
     return (
         <div className="wd-modules">
@@ -42,11 +43,11 @@ export default function Modules() {
                                         }}
                                         defaultValue={module.name} />
                                 )}
-                                <ModulesControlButtons
+                                {currentUser.role === "FACULTY" && <ModulesControlButtons
                                     moduleId={module._id}
                                     deleteModule={(moduleId) => dispatch(deleteModule(moduleId))}
                                     editModule={(moduleId) => dispatch(editModule(moduleId))}
-                                />
+                                />}
                             </div>
                             {module.lessons && (
                                 <ListGroup className="wd-lessons rounded-0">
@@ -68,11 +69,11 @@ export default function Modules() {
                                                     }}
                                                     defaultValue={module.name} />
                                             )}
-                                            <ModulesControlButtons
+                                            {currentUser.role === "FACULTY" && <ModulesControlButtons
                                                 moduleId={module._id}
                                                 deleteModule={(moduleId) => dispatch(deleteModule(moduleId))}
                                                 editModule={(moduleId) => dispatch(editModule(moduleId))}
-                                            />
+                                            />}
                                         </ListGroup.Item>
                                     ))}
                                 </ListGroup>)}

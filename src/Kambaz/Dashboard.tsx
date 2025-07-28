@@ -1,6 +1,7 @@
 import { Button, Card, Col, FormControl, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
+import { useSelector } from "react-redux";
+import * as db from "./Database";
 
 export default function Dashboard({
     courses,
@@ -8,7 +9,7 @@ export default function Dashboard({
     setCourse,
     addNewCourse,
     updateCourse,
-    deleteCourse
+    deleteCourse,
 }: {
     courses: any[];
     course: any;
@@ -17,18 +18,19 @@ export default function Dashboard({
     updateCourse: () => void;
     deleteCourse: (courseId: string) => void;
 }) {
-
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const { enrollments } = db;
     return (
         <div id="wd-dashboard">
             <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
-            <h5> New Course
+            {currentUser.role === "FACULTY" && <h5> New Course
                 <Button className="btn btn-primary float-end"
                     id="wd-add-new-course-click"
                     onClick={addNewCourse} > Add </Button>
                 <Button className="btn btn-warning float-end me-2"
                     id="wd-update-course-click"
                     onClick={updateCourse} > Update </Button>
-            </h5><hr />
+            </h5>}<hr />
             <FormControl value={course.name} className="mb-2"
                 onChange={(e) => setCourse({ ...course, name: e.target.value })} />
             <FormControl value={course.description} as="textarea" rows={3}
@@ -37,7 +39,14 @@ export default function Dashboard({
             <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2> <hr />
             <div id="wd-dashboard-courses">
                 <Row xs={1} md={5} className="g-4">
-                    {courses.map((course) => (
+                    {courses
+                        .filter((course) =>
+                            enrollments.some(
+                                (enrollment) =>
+                                    enrollment.user === currentUser._id &&
+                                    enrollment.course === course._id
+                            ))
+                        .map((course) => (
                         <Col className="wd-dashboard-course" style={{ width: "300px" }}>
                             <Card>
                                 <Link to={`/Kambaz/Courses/${course._id}/Home`}
@@ -51,18 +60,18 @@ export default function Dashboard({
                                             {course.description}
                                         </Card.Text>
                                         <Button variant="primary"> Go </Button>
-                                        <Button variant="danger" className="float-end"
+                                        {currentUser.role === "FACULTY" && <Button variant="danger" className="float-end"
                                             onClick={(event) => {
                                                 event.preventDefault();
                                                 deleteCourse(course._id);
                                             }}
-                                            id="wd-delete-course-click"> Delete </Button>
-                                        <Button variant="warning" className="me-2 float-end"
+                                            id="wd-delete-course-click"> Delete </Button>}
+                                        {currentUser.role === "FACULTY" && <Button variant="warning" className="me-2 float-end"
                                             onClick={(event) => {
                                                 event.preventDefault();
                                                 setCourse(course);
                                             }}
-                                            id="wd-edit-course-click"> Edit </Button>
+                                            id="wd-edit-course-click"> Edit </Button>}
                                     </Card.Body>
                                 </Link>
                             </Card>
