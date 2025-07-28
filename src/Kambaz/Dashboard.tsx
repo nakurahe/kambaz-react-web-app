@@ -4,35 +4,21 @@ import * as db from "./Database";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-export default function Dashboard() {
-    const [courses, setCourses] = useState<any[]>(db.courses);
-    const [course, setCourse] = useState<any>({
-        _id: "0",
-        name: "New Course",
-        number: "New Number",
-        startDate: "2023-09-10",
-        endDate: "2023-12-15",
-        image: "/images/reactjs.jpg",
-        description: "New Description",
-    });
-    const addNewCourse = () => {
-        const newCourse = { ...course, _id: uuidv4() };
-        setCourses([...courses, newCourse]);
-    };
-    const deleteCourse = (courseId: string) => {
-        setCourses(courses.filter(course => course._id !== courseId));
-    };
-    const updateCourse = () => {
-        setCourses(
-            courses.map(c => {
-                if (c._id === course._id) {
-                    return course;
-                } else {
-                    return c;
-                }
-            }));
-    };
-
+export default function Dashboard({
+    courses,
+    course,
+    setCourse,
+    addNewCourse,
+    updateCourse,
+    deleteCourse
+}: {
+    courses: any[];
+    course: any;
+    setCourse: (course: any) => void;
+    addNewCourse: () => void;
+    updateCourse: () => void;
+    deleteCourse: (courseId: string) => void;
+}) {
 
     return (
         <div id="wd-dashboard">
@@ -73,12 +59,12 @@ export default function Dashboard() {
                                                 deleteCourse(course._id);
                                             }}
                                             id="wd-delete-course-click"> Delete </Button>
-                                            <Button variant="warning" className="me-2 float-end"
-                                                onClick={(event) => {
-                                                    event.preventDefault();
-                                                    setCourse(course);
-                                                }}
-                                                id="wd-edit-course-click"> Edit </Button>
+                                        <Button variant="warning" className="me-2 float-end"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                setCourse(course);
+                                            }}
+                                            id="wd-edit-course-click"> Edit </Button>
                                     </Card.Body>
                                 </Link>
                             </Card>

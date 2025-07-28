@@ -4,14 +4,20 @@ import { ListGroup } from "react-bootstrap";
 import ModulesControlButtons from "./ModuleControlButtons";
 import { useParams } from "react-router";
 import * as db from "../../Database";
+import { useState } from "react";
 
 export default function Modules() {
     const { cid } = useParams();
-    const modules = db.modules;
+    const [modules, setModules] = useState<any[]>(db.modules);
+    const [moduleName, setModuleName] = useState("");
+    const addModule = () => {
+        setModules([...modules, { _id: uuidv4(), name: moduleName, course: cid, lessons: [] }]);
+        setModuleName("");
+    };
 
     return (
-        <div>
-            <ModulesControls /><br /><br /><br /><br />
+        <div className="wd-modules">
+            <ModulesControls setModuleName={setModuleName} moduleName={moduleName} addModule={addModule} /><br /><br /><br /><br />
             <ListGroup className="rounded-0" id="wd-modules">
                 {modules
                     .filter((module: any) => module.course === cid)
@@ -32,4 +38,8 @@ export default function Modules() {
             </ListGroup>
         </div>
     );
+}
+
+function uuidv4() {
+    throw new Error("Function not implemented.");
 }
