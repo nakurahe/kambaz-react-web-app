@@ -1,31 +1,89 @@
 import Form from "react-bootstrap/Form";
-import { useParams, Link } from "react-router";
-import * as db from "../../Database";
+import { useParams, useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { addAssignment, updateAssignment } from "./reducer";
+import { useState, useEffect } from "react";
 
 export default function AssignmentEditor() {
     const { cid, aid } = useParams();
-    const assignment = db.assignments.find((a: any) => a._id === aid);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { assignments } = useSelector((state: any) => state.assignmentsReducer);
+    
+    const existingAssignment = aid ? assignments.find((a: any) => a._id === aid) : null;
+    const isEditing = !!aid && !!existingAssignment;
 
-    if (!assignment) {
+    const [assignment, setAssignment] = useState({
+        title: "",
+        description: "",
+        points: 100,
+        dueDate: "",
+        availableFrom: "",
+        availableUntil: "",
+        course: cid
+    });
+
+    useEffect(() => {
+        if (isEditing && existingAssignment) {
+            setAssignment({
+                title: existingAssignment.title || "",
+                description: existingAssignment.description || "",
+                points: existingAssignment.points || 100,
+                dueDate: existingAssignment.dueDate || "",
+                availableFrom: existingAssignment.availableFrom || "",
+                availableUntil: existingAssignment.availableUntil || "",
+                course: existingAssignment.course || cid
+            });
+        }
+    }, [isEditing, existingAssignment, cid]);
+
+    const handleSave = () => {
+        if (isEditing) {
+            dispatch(updateAssignment({ ...assignment, _id: aid }));
+        } else {
+            dispatch(addAssignment(assignment));
+        }
+        navigate(`/Kambaz/Courses/${cid}/Assignments`);
+    };
+
+    const handleCancel = () => {
+        navigate(`/Kambaz/Courses/${cid}/Assignments`);
+    };
+
+    const handleInputChange = (field: string, value: any) => {
+        setAssignment({ ...assignment, [field]: value });
+    };
+
+    if (aid && !existingAssignment) {
         return (
             <div id="wd-assignments-editor">
                 <h3>Assignment not found</h3>
-                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-secondary">
+                <button onClick={handleCancel} className="btn btn-secondary">
                     Back to Assignments
-                </Link>
+                </button>
             </div>
         );
     }
 
     return (
         <div id="wd-assignments-editor">
+            <h3>{isEditing ? "Edit Assignment" : "New Assignment"}</h3>
             <Form.Group controlId="wd-name">
                 <Form.Label>Assignment Name</Form.Label>
-                <Form.Control type="text" defaultValue={assignment.title} />
+                <Form.Control 
+                    type="text" 
+                    value={assignment.title}
+                    onChange={(e) => handleInputChange("title", e.target.value)}
+                />
             </Form.Group>
             <Form.Group controlId="wd-description">
                 <Form.Label>Description</Form.Label>
-                <Form.Control as="textarea" rows={5} defaultValue={assignment.description || "No description available"} />
+                <Form.Control 
+                    as="textarea" 
+                    rows={5} 
+                    value={assignment.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                />
             </Form.Group>
             <br />
             
@@ -34,7 +92,12 @@ export default function AssignmentEditor() {
                     Points
                 </Form.Label>
                 <div className="col-sm-10">
-                    <Form.Control id="wd-points" type="number" defaultValue={assignment.points || 100} />
+                    <Form.Control 
+                        id="wd-points" 
+                        type="number" 
+                        value={assignment.points}
+                        onChange={(e) => handleInputChange("points", parseInt(e.target.value) || 0)}
+                    />
                 </div>
             </Form.Group>
 
@@ -99,20 +162,35 @@ export default function AssignmentEditor() {
                         
                         <Form.Group className="mb-3">
                             <Form.Label htmlFor="wd-due-date">Due</Form.Label>
-                            <Form.Control id="wd-due-date" type="date" defaultValue={assignment.dueDate || "2024-05-13"} />
+                            <Form.Control 
+                                id="wd-due-date" 
+                                type="date" 
+                                value={assignment.dueDate}
+                                onChange={(e) => handleInputChange("dueDate", e.target.value)}
+                            />
                         </Form.Group>
                         
                         <div className="row">
                             <div className="col-md-6">
                                 <Form.Group>
                                     <Form.Label htmlFor="wd-available-from">Available From</Form.Label>
-                                    <Form.Control id="wd-available-from" type="date" defaultValue={assignment.availableFrom || "2024-05-06"} />
+                                    <Form.Control 
+                                        id="wd-available-from" 
+                                        type="date" 
+                                        value={assignment.availableFrom}
+                                        onChange={(e) => handleInputChange("availableFrom", e.target.value)}
+                                    />
                                 </Form.Group>
                             </div>
                             <div className="col-md-6">
                                 <Form.Group>
                                     <Form.Label htmlFor="wd-available-until">Until</Form.Label>
-                                    <Form.Control id="wd-available-until" type="date" defaultValue={assignment.availableUntil || "2024-05-20"} />
+                                    <Form.Control 
+                                        id="wd-available-until" 
+                                        type="date" 
+                                        value={assignment.availableUntil}
+                                        onChange={(e) => handleInputChange("availableUntil", e.target.value)}
+                                    />
                                 </Form.Group>
                             </div>
                         </div>
@@ -121,8 +199,8 @@ export default function AssignmentEditor() {
             </Form.Group>
             <hr />
             <div className="text-end">
-                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-secondary me-2">Cancel</Link>
-                <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-danger">Save</Link>
+                <button onClick={handleCancel} className="btn btn-secondary me-2">Cancel</button>
+                <button onClick={handleSave} className="btn btn-danger">Save</button>
             </div>
         </div>
     );
