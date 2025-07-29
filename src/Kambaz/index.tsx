@@ -4,41 +4,10 @@ import Dashboard from "./Dashboard";
 import KambazNavigation from "./Navigation";
 import Courses from "./Courses";
 import "./styles.css";
-import * as db from "./Database";
-import { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import ProtectedRoute from "./Account/ProtectedRoute";
+import ProtectedCourseRoute from "./Courses/ProtectedCourseRoute";
 
 export default function Kambaz() {
-    const [courses, setCourses] = useState<any[]>(db.courses);
-    const [course, setCourse] = useState<any>({
-        _id: "1234",
-        name: "New Course",
-        number: "New Number",
-        startDate: "2023-09-10",
-        endDate: "2023-12-15",
-        description: "New Description"
-    });
-
-    const addNewCourse = () => {
-        setCourse([...courses, { ...course, _id: uuidv4() }]);
-    };
-
-    const updateCourse = () => {
-        setCourse(
-            courses.map((c) => {
-                if (c._id === course._id) {
-                    return course;
-                } else {
-                    return c;
-                }
-            })
-        );
-    };
-
-    const deleteCourse = (courseId: any) => {
-        setCourses(courses.filter((c) => c._id !== courseId));
-    };
 
     return (
         <div id="wd-kambaz">
@@ -49,18 +18,17 @@ export default function Kambaz() {
                     <Route path="/Account/*" element={<Account />} />
                     <Route path="/Dashboard" element={
                         <ProtectedRoute>
-                        <Dashboard
-                            courses={courses}
-                            course={course}
-                            setCourse={setCourse}
-                            addNewCourse={addNewCourse}
-                            updateCourse={updateCourse}
-                            deleteCourse={deleteCourse}
-                        />
+                            <Dashboard />
                         </ProtectedRoute>
                     } />
-                    <Route path="/Courses" element={<ProtectedRoute><Navigate to="/Kambaz/Courses/RS101/Home" /></ProtectedRoute>} />
-                    <Route path="/Courses/:cid/*" element={<ProtectedRoute><Courses courses={courses} /></ProtectedRoute>} />
+                    <Route path="/Courses" element={<ProtectedRoute><Navigate to="/Kambaz/Dashboard" /></ProtectedRoute>} />
+                    <Route path="/Courses/:cid/*" element={
+                        <ProtectedRoute>
+                            <ProtectedCourseRoute>
+                                <Courses />
+                            </ProtectedCourseRoute>
+                        </ProtectedRoute>
+                    } />
                     <Route path="Calendar" element={<h1>Calendar</h1>} />
                     <Route path="Inbox" element={<h1>Inbox</h1>} />
                 </Routes>
