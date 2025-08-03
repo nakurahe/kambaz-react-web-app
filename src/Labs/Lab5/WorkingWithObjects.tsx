@@ -42,6 +42,18 @@ export default function WorkingWithObjects() {
                 defaultValue={assignment.score} onChange={(e) =>
                     setAssignment({ ...assignment, score: parseInt(e.target.value) || 0 })} />
             <hr />
+            <a id="wd-update-assignment-completed"
+                className="btn btn-primary float-end"
+                href={`${ASSIGNMENT_API_URL}/completed/${assignment.completed}`}>
+                Update Assignment Completed
+            </a>
+            <input className="form-check-input me-2" type="checkbox" id="wd-assignment-completed"
+                checked={assignment.completed} onChange={(e) =>
+                    setAssignment({ ...assignment, completed: e.target.checked })} />
+            <label className="form-check-label" htmlFor="wd-assignment-completed">
+                Assignment Completed
+            </label>
+            <hr />
             <a id="wd-update-module-name"
                 className="btn btn-primary float-end"
                 href={`${MODULE_API_URL}/name/${module.name}`}>
@@ -49,7 +61,16 @@ export default function WorkingWithObjects() {
             </a>
             <FormControl className="w-75" id="wd-module-name"
                 defaultValue={module.name} onChange={(e) =>
-                    setAssignment({ ...assignment, description: e.target.value })} />
+                    setModule({ ...module, name: e.target.value })} />
+            <hr />
+            <a id="wd-update-module-description"
+                className="btn btn-primary float-end"
+                href={`${MODULE_API_URL}/description/${module.description}`}>
+                Update Module Description
+            </a>
+            <FormControl className="w-75" id="wd-module-description"
+                defaultValue={module.description} onChange={(e) =>
+                    setModule({ ...module, description: e.target.value })} />
             <hr />
 
             <h4>Retrieving Objects</h4>
