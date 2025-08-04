@@ -14,7 +14,8 @@ export default function Profile() {
         if (!currentUser) return navigate("/Kambaz/Account/Signin");
         setProfile(currentUser);
     };
-    const signout = () => {
+    const signout = async () => {
+        await client.signout();
         dispatch(setCurrentUser(null));
         navigate("/Kambaz/Account/Signin");
     };
@@ -50,7 +51,7 @@ export default function Profile() {
                         <option value="STUDENT">Student</option>
                     </select>
                     <Button onClick={updateProfile} className="btn btn-primary w-100 mb-2"> Update </Button>
-                    <Button onClick={signout} className="w-100 mb-2" id="wd-signout-btn">
+                    <Button onClick={signout} className="btn btn-danger w-100 mb-2" id="wd-signout-btn">
                         Sign out
                     </Button>
                 </div>)}
