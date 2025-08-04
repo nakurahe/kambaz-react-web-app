@@ -7,9 +7,30 @@ import "./styles.css";
 import ProtectedRoute from "./Account/ProtectedRoute";
 import ProtectedCourseRoute from "./Courses/ProtectedCourseRoute";
 import Session from "./Account/Session";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setCourses } from "./Courses/reducer";
+import * as userClient from "./Account/client";
 
 export default function Kambaz() {
+    const dispatch = useDispatch();
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
 
+    const fetchCourses = async () => {
+        try {
+            const courses = await userClient.findMyCourses();
+            dispatch(setCourses(courses));
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchCourses();
+        }
+    }, [currentUser]);
+    
     return (
         <Session>
             <div id="wd-kambaz">

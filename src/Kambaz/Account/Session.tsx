@@ -10,7 +10,11 @@ export default function Session({ children }: { children: any }) {
             const currentUser = await client.profile();
             dispatch(setCurrentUser(currentUser));
         } catch (err: any) {
-            console.error(err);
+            // If the request fails with 401 (Unauthorized), it means the user is not logged in
+            // This is expected behavior, so we don't need to log it as an error
+            if (err.response?.status !== 401) {
+                console.error(err);
+            }
         }
         setPending(false);
     };
