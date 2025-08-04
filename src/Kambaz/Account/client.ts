@@ -34,8 +34,8 @@ export const signout = async () => {
     return response.data;
 };
 export const findMyCourses = async () => {
-    const { data } = await axiosWithCredentials.get(`${USERS_API}/courses`);
-    return data;
+    const response = await axiosWithCredentials.get(`${USERS_API}/current/courses`);
+    return response.data;
 };
 
 export const createCourse = async (course: any) => {

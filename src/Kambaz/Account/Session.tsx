@@ -11,13 +11,16 @@ export default function Session({ children }: { children: any }) {
             dispatch(setCurrentUser(currentUser));
         } catch (err: any) {
             // If the request fails with 401 (Unauthorized), it means the user is not logged in
-            // This is expected behavior, so we don't need to log it as an error
-            if (err.response?.status !== 401) {
-                console.error(err);
+            // Clear the current user from Redux state and redirect to signin
+            if (err.response?.status === 401) {
+                dispatch(setCurrentUser(null));
             }
+        } finally {
+            setPending(false);
         }
-        setPending(false);
     };
+
+    // Check session on app start
     useEffect(() => {
         fetchProfile();
     }, []);

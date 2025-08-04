@@ -5,6 +5,8 @@ import { addCourse, deleteCourse, updateCourse, setCourse, updateCourseField } f
 import { toggleShowAllCourses } from "./Enrollments/reducer";
 import * as coursesClient from "./Courses/client";
 import { setCourses } from "./Courses/reducer";
+import * as userClient from "./Account/client";
+import { setCurrentUser } from "./Account/reducer";
 
 export default function Dashboard() {
     const dispatch = useDispatch();
@@ -37,18 +39,21 @@ export default function Dashboard() {
 
     const handleToggleShowAllCourses = async () => {
         try {
-            if (showAllCourses) {
-                // Show only enrolled courses (user's courses)
-                const userCourses = await import("./Account/client").then(client => client.findMyCourses());
-                dispatch(setCourses(userCourses));
-            } else {
-                // Show all courses
+            if (!showAllCourses) {
+                // Currently showing user's courses, switch to all courses
                 const allCourses = await coursesClient.fetchAllCourses();
                 dispatch(setCourses(allCourses));
+            } else {
+                // Currently showing all courses, switch to user's enrolled courses
+                const userCourses = await userClient.findMyCourses();
+                dispatch(setCourses(userCourses));
             }
             dispatch(toggleShowAllCourses());
-        } catch (error) {
-            console.error("Error toggling courses:", error);
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                // Clear user state to force re-login
+                dispatch(setCurrentUser(null));
+            }
         }
     };
 
@@ -67,7 +72,7 @@ export default function Dashboard() {
                 </Button>
             </div>
             <hr />
-            {currentUser.role === "FACULTY" && <h5> New Course
+            {currentUser && currentUser.role === "FACULTY" && <h5> New Course
                 <Button className="btn btn-primary float-end"
                     id="wd-add-new-course-click"
                     onClick={handleAddNewCourse} > Add </Button>
@@ -103,7 +108,7 @@ export default function Dashboard() {
                                             <Button variant="primary" size="sm"> Go </Button>
                                             
                                             {/* Faculty-only course management buttons */}
-                                            {currentUser.role === "FACULTY" && (
+                                            {currentUser && currentUser.role === "FACULTY" && (
                                                 <div className="d-flex gap-2">
                                                     <Button variant="warning" size="sm"
                                                         onClick={(event) => {
