@@ -19,8 +19,14 @@ export default function Dashboard() {
         dispatch(addCourse(newCourse));
     };
 
-    const handleUpdateCourse = () => {
-        dispatch(updateCourse(course));
+    const handleUpdateCourse = async () => {
+        try {
+            const updatedCourse = await coursesClient.updateCourse(course);
+            dispatch(updateCourse(updatedCourse));
+        } catch (error: any) {
+            console.error("Failed to update course:", error);
+            alert("Failed to update course. Please try again.");
+        }
     };
 
     const handleDeleteCourse = async (courseId: string) => {
