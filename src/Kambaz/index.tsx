@@ -37,23 +37,27 @@ export default function Kambaz() {
                 <KambazNavigation />
                 <div className="wd-main-content-offset p-3">
                     <Routes>
-                        <Route path="/" element={<Navigate to="Account" />} />
-                        <Route path="/Account/*" element={<Account />} />
-                        <Route path="/Dashboard" element={
+                        <Route key="root" path="/" element={<Navigate to="Account" />} />
+                        <Route key="account" path="/Account/*" element={<Account />} />
+                        <Route key="dashboard" path="/Dashboard" element={
                             <ProtectedRoute>
                                 <Dashboard />
                             </ProtectedRoute>
                         } />
-                        <Route path="/Courses" element={<ProtectedRoute><Navigate to="/Kambaz/Dashboard" /></ProtectedRoute>} />
-                        <Route path="/Courses/:cid/*" element={
+                        <Route key="courses-list" path="/Courses" element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        } />
+                        <Route key="courses-detail" path="/Courses/:cid/*" element={
                             <ProtectedRoute>
                                 <ProtectedCourseRoute>
                                     <Courses />
                                 </ProtectedCourseRoute>
                             </ProtectedRoute>
                         } />
-                        <Route path="Calendar" element={<h1>Calendar</h1>} />
-                        <Route path="Inbox" element={<h1>Inbox</h1>} />
+                        <Route key="calendar" path="Calendar" element={<h1>Calendar</h1>} />
+                        <Route key="inbox" path="Inbox" element={<h1>Inbox</h1>} />
                     </Routes>
                 </div>
             </div>
