@@ -12,10 +12,10 @@ export const deleteModule = async (moduleId: string) => {
     return data;
 };
 
-// export const updateModule = async (module: any) => {
-//     const { data } = await axios.put(`${MODULES_API}/${module._id}`, module);
-//     return data;
-// };
+export const updateModule = async (module: any) => {
+    const { data } = await axios.put(`${MODULES_API}/${module._id}`, module);
+    return data;
+};
 
 // export const findLessonsForModule = async (moduleId: string) => {
 //     const response = await axios.get(`${MODULES_API}/${moduleId}/lessons`);

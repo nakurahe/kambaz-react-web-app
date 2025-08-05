@@ -37,6 +37,11 @@ export default function Modules() {
         dispatch(deleteModule(moduleId));
     };
 
+    const saveModule = async (module: any) => {
+        await modulesClient.updateModule(module);
+        dispatch(updateModule(module));
+    };
+
     return (
         <div className="wd-modules">
             <ModulesControls setModuleName={setModuleName} moduleName={moduleName}
@@ -57,7 +62,9 @@ export default function Modules() {
                                         }
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                                dispatch(updateModule({ ...module, editing: false }));
+                                                const updatedModule = { ...module, editing: false, name: (e.target as HTMLInputElement).value };
+                                                dispatch(updateModule(updatedModule));
+                                                saveModule(updatedModule);
                                             }
                                         }}
                                         defaultValue={module.name} />
@@ -83,14 +90,16 @@ export default function Modules() {
                                                     }
                                                     onKeyDown={(e) => {
                                                         if (e.key === "Enter") {
-                                                            dispatch(updateModule({ ...module, editing: false }));
+                                                            const updatedModule = { ...module, editing: false, name: (e.target as HTMLInputElement).value };
+                                                            dispatch(updateModule(updatedModule));
+                                                            saveModule(updatedModule);
                                                         }
                                                     }}
                                                     defaultValue={module.name} />
                                             )}
                                             {currentUser.role === "FACULTY" && <ModulesControlButtons
                                                 moduleId={module._id}
-                                                deleteModule={(moduleId) => dispatch(deleteModule(moduleId))}
+                                                deleteModule={(moduleId) => removeModule(moduleId)}
                                                 editModule={(moduleId) => dispatch(editModule(moduleId))}
                                             />}
                                         </ListGroup.Item>
