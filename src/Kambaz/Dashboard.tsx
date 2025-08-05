@@ -14,8 +14,9 @@ export default function Dashboard() {
     const { courses, course } = useSelector((state: any) => state.coursesReducer);
     const { showAllCourses } = useSelector((state: any) => state.enrollmentsReducer);
 
-    const handleAddNewCourse = () => {
-        dispatch(addCourse(course));
+    const handleAddNewCourse = async () => {
+        const newCourse = await userClient.createCourse(course);
+        dispatch(addCourse(newCourse));
     };
 
     const handleUpdateCourse = () => {

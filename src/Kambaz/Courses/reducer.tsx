@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
 
 const initialState = {
     courses: [],
@@ -20,11 +19,7 @@ const coursesSlice = createSlice({
     initialState,
     reducers: {
         addCourse: (state, { payload: course }) => {
-            const newCourse: any = {
-                ...course,
-                _id: uuidv4(),
-            };
-            state.courses = [...state.courses, newCourse] as any;
+            state.courses = [...state.courses, course] as any;
         },
         deleteCourse: (state, { payload: courseId }) => {
             state.courses = state.courses.filter(
