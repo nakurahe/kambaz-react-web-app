@@ -2,17 +2,70 @@ import { Button, Card, Col, FormControl, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { addCourse, deleteCourse, updateCourse, setCourse, updateCourseField } from "./Courses/reducer";
-import { toggleShowAllCourses } from "./Enrollments/reducer";
+import { toggleShowAllCourses, enrollInCourse, unenrollFromCourse, setEnrollments } from "./Enrollments/reducer";
 import * as coursesClient from "./Courses/client";
+import * as enrollmentsClient from "./Enrollments/client";
 import { setCourses } from "./Courses/reducer";
 import * as userClient from "./Account/client";
 import { setCurrentUser } from "./Account/reducer";
+import { useEffect } from "react";
 
 export default function Dashboard() {
     const dispatch = useDispatch();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const { courses, course } = useSelector((state: any) => state.coursesReducer);
-    const { showAllCourses } = useSelector((state: any) => state.enrollmentsReducer);
+    const { showAllCourses, enrollments } = useSelector((state: any) => state.enrollmentsReducer);
+
+    useEffect(() => {
+        // Load initial enrollments data
+        const loadEnrollments = async () => {
+            if (!currentUser?._id) {
+                return; // Don't try to load enrollments if no user is logged in
+            }
+            
+            try {
+                // Try to fetch from server first (if GET endpoint exists)
+                const enrollmentsData = await enrollmentsClient.findAllEnrollments(currentUser._id);
+                dispatch(setEnrollments(enrollmentsData));
+            } catch (error) {
+                console.error("Failed to load enrollments:", error);
+                // Fall back to local state if server isn't available
+            }
+        };
+        loadEnrollments();
+    }, [currentUser]);
+
+    const isUserEnrolledInCourse = (courseId: string) => {
+        if (!currentUser) return false;
+        return enrollments.some((enrollment: any) => 
+            enrollment.user === currentUser._id && enrollment.course === courseId
+        );
+    };
+
+    const handleEnrollInCourse = async (courseId: string) => {
+        if (!currentUser) return;
+        try {
+            await enrollmentsClient.enrollInCourse(currentUser._id, courseId);
+            dispatch(enrollInCourse({ userId: currentUser._id, courseId }));
+        } catch (error) {
+            console.error("Failed to enroll in course:", error);
+            alert("Failed to enroll in course. Please try again.");
+        }
+    };
+
+    const handleUnenrollFromCourse = async (courseId: string) => {
+        if (!currentUser) return;
+        const confirmUnenroll = window.confirm("Are you sure you want to unenroll from this course?");
+        if (confirmUnenroll) {
+            try {
+                await enrollmentsClient.unenrollFromCourse(currentUser._id, courseId);
+                dispatch(unenrollFromCourse({ userId: currentUser._id, courseId }));
+            } catch (error) {
+                console.error("Failed to unenroll from course:", error);
+                alert("Failed to unenroll from course. Please try again.");
+            }
+        }
+    };
 
     const handleAddNewCourse = async () => {
         const newCourse = await userClient.createCourse(course);
@@ -124,6 +177,29 @@ export default function Dashboard() {
                                         </Card.Text>
                                         <div className="d-flex justify-content-between align-items-center mt-2">
                                             <Button variant="primary" size="sm"> Go </Button>
+                                            
+                                            {/* Student enrollment buttons - only show when viewing all courses */}
+                                            {currentUser && currentUser.role === "STUDENT" && showAllCourses && (
+                                                <div className="d-flex gap-2">
+                                                    {isUserEnrolledInCourse(courseItem._id) ? (
+                                                        <Button variant="danger" size="sm"
+                                                            onClick={(event) => {
+                                                                event.preventDefault();
+                                                                handleUnenrollFromCourse(courseItem._id);
+                                                            }}>
+                                                            Unenroll
+                                                        </Button>
+                                                    ) : (
+                                                        <Button variant="success" size="sm"
+                                                            onClick={(event) => {
+                                                                event.preventDefault();
+                                                                handleEnrollInCourse(courseItem._id);
+                                                            }}>
+                                                            Enroll
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
                                             
                                             {/* Faculty-only course management buttons */}
                                             {currentUser && currentUser.role === "FACULTY" && (
