@@ -5,7 +5,10 @@ import { ListGroup } from "react-bootstrap";
 import GreenCheckmark from "../Modules/GreenCheckmark";
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteAssignment } from "./reducer";
+import { useEffect } from "react";
+import { deleteAssignment, setAssignments } from "./reducer";
+import * as coursesClient from "../client";
+import * as assignmentsClient from "./client";
 
 export default function Assignments() {
     const { cid } = useParams();
@@ -15,9 +18,19 @@ export default function Assignments() {
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
 
-    const handleDeleteAssignment = (assignmentId: string) => {
+    const fetchAssignments = async () => {
+        const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
+        dispatch(setAssignments(assignments));
+    };
+    
+    useEffect(() => {
+        fetchAssignments();
+    }, []);
+
+    const handleDeleteAssignment = async (assignmentId: string) => {
         const confirmDelete = window.confirm("Are you sure you want to remove this assignment?");
         if (confirmDelete) {
+            await assignmentsClient.deleteAssignment(assignmentId);
             dispatch(deleteAssignment(assignmentId));
         }
     };

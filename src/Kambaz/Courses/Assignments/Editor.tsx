@@ -1,8 +1,10 @@
 import Form from "react-bootstrap/Form";
 import { useParams, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { addAssignment, updateAssignment } from "./reducer";
+import { addAssignment, updateAssignment, setAssignments } from "./reducer";
 import { useState, useEffect } from "react";
+import * as coursesClient from "../client";
+import * as assignmentsClient from "./client";
 
 export default function AssignmentEditor() {
     const { cid, aid } = useParams();
@@ -24,6 +26,15 @@ export default function AssignmentEditor() {
     });
 
     useEffect(() => {
+        const fetchAssignments = async () => {
+            if (assignments.length === 0) {
+                const fetchedAssignments = await coursesClient.findAssignmentsForCourse(cid as string);
+                dispatch(setAssignments(fetchedAssignments));
+            }
+        };
+        
+        fetchAssignments();
+        
         if (isEditing && existingAssignment) {
             setAssignment({
                 title: existingAssignment.title || "",
@@ -35,13 +46,16 @@ export default function AssignmentEditor() {
                 course: existingAssignment.course || cid
             });
         }
-    }, [isEditing, existingAssignment, cid]);
+    }, [isEditing, existingAssignment, cid, assignments.length, dispatch]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (isEditing) {
-            dispatch(updateAssignment({ ...assignment, _id: aid }));
+            const updatedAssignment = { ...assignment, _id: aid };
+            await assignmentsClient.updateAssignment(updatedAssignment);
+            dispatch(updateAssignment(updatedAssignment));
         } else {
-            dispatch(addAssignment(assignment));
+            const newAssignment = await assignmentsClient.createAssignment(assignment);
+            dispatch(addAssignment(newAssignment));
         }
         navigate(`/Kambaz/Courses/${cid}/Assignments`);
     };
