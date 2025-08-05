@@ -6,7 +6,10 @@ import { Button, FormControl } from "react-bootstrap";
 import * as client from "./client";
 
 export default function Signin() {
-    const [credentials, setCredentials] = useState<any>({});
+    const [credentials, setCredentials] = useState<any>({
+        username: "iron_man",
+        password: "stark123",
+    });
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const signin = async () => {

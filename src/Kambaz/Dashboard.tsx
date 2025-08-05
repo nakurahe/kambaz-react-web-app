@@ -23,10 +23,16 @@ export default function Dashboard() {
         dispatch(updateCourse(course));
     };
 
-    const handleDeleteCourse = (courseId: string) => {
+    const handleDeleteCourse = async (courseId: string) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this course?");
         if (confirmDelete) {
-            dispatch(deleteCourse(courseId));
+            try {
+                await coursesClient.deleteCourse(courseId);
+                dispatch(deleteCourse(courseId));
+            } catch (error: any) {
+                console.error("Failed to delete course:", error);
+                alert("Failed to delete course. Please try again.");
+            }
         }
     };
 
@@ -73,19 +79,24 @@ export default function Dashboard() {
                 </Button>
             </div>
             <hr />
-            {currentUser && currentUser.role === "FACULTY" && <h5> New Course
-                <Button className="btn btn-primary float-end"
-                    id="wd-add-new-course-click"
-                    onClick={handleAddNewCourse} > Add </Button>
-                <Button className="btn btn-warning float-end me-2"
-                    id="wd-update-course-click"
-                    onClick={handleUpdateCourse} > Update </Button>
-            </h5>}<hr />
-            <FormControl value={course.name} className="mb-2"
-                onChange={(e) => handleCourseFieldChange("name", e.target.value)} />
-            <FormControl value={course.description} as="textarea" rows={3}
-                onChange={(e) => handleCourseFieldChange("description", e.target.value)} />
-            <hr />
+            {currentUser && currentUser.role === "FACULTY" && (
+                <>
+                    <h5> New Course
+                        <Button className="btn btn-primary float-end"
+                            id="wd-add-new-course-click"
+                            onClick={handleAddNewCourse} > Add </Button>
+                        <Button className="btn btn-warning float-end me-2"
+                            id="wd-update-course-click"
+                            onClick={handleUpdateCourse} > Update </Button>
+                    </h5>
+                    <hr />
+                    <FormControl value={course.name} className="mb-2"
+                        onChange={(e) => handleCourseFieldChange("name", e.target.value)} />
+                    <FormControl value={course.description} as="textarea" rows={3}
+                        onChange={(e) => handleCourseFieldChange("description", e.target.value)} />
+                    <hr />
+                </>
+            )}
             <h2 id="wd-dashboard-published">
                 {showAllCourses ? "All Courses" : "My Courses"} ({getCoursesToDisplay().length})
             </h2> 
