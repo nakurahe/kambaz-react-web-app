@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
 import * as coursesClient from "../client";
+import * as modulesClient from "./client";
 
 export default function Modules() {
     const { cid } = useParams();
@@ -31,6 +32,11 @@ export default function Modules() {
         setModuleName("");
     };
 
+    const removeModule = async (moduleId: string) => {
+        await modulesClient.deleteModule(moduleId);
+        dispatch(deleteModule(moduleId));
+    };
+
     return (
         <div className="wd-modules">
             <ModulesControls setModuleName={setModuleName} moduleName={moduleName}
@@ -38,7 +44,7 @@ export default function Modules() {
             <ListGroup className="rounded-0" id="wd-modules">
                 {modules
                     .map((module: any) => (
-                        <ListGroup.Item className="wd-module p-0 mb-5 fs-5 border-gray">
+                        <ListGroup.Item key={module._id} className="wd-module p-0 mb-5 fs-5 border-gray">
                             <div className="wd-title p-3 ps-2 bg-secondary">
                                 <BsGripVertical className="me-2 fs-3" />
                                 {!module.editing && module.name}
@@ -58,14 +64,14 @@ export default function Modules() {
                                 )}
                                 {currentUser.role === "FACULTY" && <ModulesControlButtons
                                     moduleId={module._id}
-                                    deleteModule={(moduleId) => dispatch(deleteModule(moduleId))}
+                                    deleteModule={(moduleId) => removeModule(moduleId)}
                                     editModule={(moduleId) => dispatch(editModule(moduleId))}
                                 />}
                             </div>
                             {module.lessons && (
                                 <ListGroup className="wd-lessons rounded-0">
-                                    {module.lessons.map((lesson: any) => (
-                                        <ListGroup.Item className="wd-lesson p-3 ps-1">
+                                    {module.lessons.map((lesson: any, lessonIndex: number) => (
+                                        <ListGroup.Item key={lesson._id || `lesson-${module._id}-${lessonIndex}`} className="wd-lesson p-3 ps-1">
                                             <BsGripVertical className="me-2 fs-3" />
                                             {!module.editing && lesson.name}
                                             {module.editing && (
