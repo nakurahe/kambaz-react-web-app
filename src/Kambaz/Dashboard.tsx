@@ -178,8 +178,8 @@ export default function Dashboard() {
                                         <div className="d-flex justify-content-between align-items-center mt-2">
                                             <Button variant="primary" size="sm"> Go </Button>
                                             
-                                            {/* Student enrollment buttons - only show when viewing all courses */}
-                                            {currentUser && currentUser.role === "STUDENT" && showAllCourses && (
+                                            {/* Enrollment buttons - show for any user when viewing all courses */}
+                                            {currentUser && showAllCourses && (
                                                 <div className="d-flex gap-2">
                                                     {isUserEnrolledInCourse(courseItem._id) ? (
                                                         <Button variant="danger" size="sm"
