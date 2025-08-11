@@ -1,5 +1,7 @@
 import { Table, Button } from "react-bootstrap";
 import { FaUserCircle, FaEdit, FaTrash } from "react-icons/fa";
+import PeopleDetails from "./Details";
+import { Link } from "react-router";
 
 interface PeopleTableProps {
     people?: any[];
@@ -10,6 +12,7 @@ interface PeopleTableProps {
 export default function PeopleTable({ people = [], onEdit, onDelete }: PeopleTableProps) {
     return (
         <div id="wd-people-table">
+            <PeopleDetails />
             <Table striped>
                 <thead>
                     <tr>
@@ -26,9 +29,11 @@ export default function PeopleTable({ people = [], onEdit, onDelete }: PeopleTab
                     {people.map((user: any) => (
                         <tr key={user._id}>
                             <td className="wd-full-name text-nowrap">
-                                <FaUserCircle className="me-2 fs-1 text-secondary" />
-                                <span className="wd-first-name">{user.firstName} </span>
-                                <span className="wd-last-name">{user.lastName}</span>
+                                <Link to={`/Kambaz/Account/Users/${user._id}`} className="text-decoration-none text-dark">
+                                    <FaUserCircle className="me-2 fs-1 text-secondary" />
+                                    <span className="wd-first-name">{user.firstName} </span>
+                                    <span className="wd-last-name">{user.lastName}</span>
+                                </Link>
                             </td>
                             <td className="wd-login-id">{user.loginId}</td>
                             <td className="wd-section">{user.section}</td>

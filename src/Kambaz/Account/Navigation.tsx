@@ -19,6 +19,17 @@ export default function AccountNavigation() {
                     {link} 
                 </Link>
             ))}
+            {currentUser && currentUser.role === "ADMIN" && (
+                <Link 
+                    to="/Kambaz/Account/Users" 
+                    id="wd-account-users-link"
+                    className={`list-group-item border border-0 ${
+                        pathname.includes("Users") ? "active" : "text-danger"
+                    }`}
+                >
+                    Users
+                </Link>
+            )}
         </div>
     );
 }
