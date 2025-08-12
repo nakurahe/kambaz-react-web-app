@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { addAssignment, updateAssignment, setAssignments } from "./reducer";
 import { useState, useEffect } from "react";
-import * as coursesClient from "../client";
 import * as assignmentsClient from "./client";
 
 export default function AssignmentEditor() {
@@ -24,16 +23,55 @@ export default function AssignmentEditor() {
         availableUntil: "",
         course: cid
     });
+    
+    const [loading, setLoading] = useState(false);
+    const [assignmentNotFound, setAssignmentNotFound] = useState(false);
 
     useEffect(() => {
         const fetchAssignments = async () => {
-            if (assignments.length === 0) {
-                const fetchedAssignments = await coursesClient.findAssignmentsForCourse(cid as string);
-                dispatch(setAssignments(fetchedAssignments));
+            try {
+                setLoading(true);
+                if (assignments.length === 0) {
+                    const fetchedAssignments = await assignmentsClient.findAssignmentsForCourse(cid as string);
+                    dispatch(setAssignments(fetchedAssignments));
+                }
+            } catch (error) {
+                console.error("Failed to fetch assignments:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        const fetchSpecificAssignment = async () => {
+            if (aid && !existingAssignment) {
+                try {
+                    setLoading(true);
+                    const fetchedAssignment = await assignmentsClient.findAssignmentById(aid);
+                    if (fetchedAssignment) {
+                        setAssignment({
+                            title: fetchedAssignment.title || "",
+                            description: fetchedAssignment.description || "",
+                            points: fetchedAssignment.points || 100,
+                            dueDate: fetchedAssignment.dueDate || "",
+                            availableFrom: fetchedAssignment.availableFrom || "",
+                            availableUntil: fetchedAssignment.availableUntil || "",
+                            course: fetchedAssignment.course || cid
+                        });
+                        setAssignmentNotFound(false);
+                    } else {
+                        setAssignmentNotFound(true);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch specific assignment:", error);
+                    setAssignmentNotFound(true);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
         
         fetchAssignments();
+        fetchSpecificAssignment();
         
         if (isEditing && existingAssignment) {
             setAssignment({
@@ -46,18 +84,23 @@ export default function AssignmentEditor() {
                 course: existingAssignment.course || cid
             });
         }
-    }, [isEditing, existingAssignment, cid, assignments.length, dispatch]);
+    }, [isEditing, existingAssignment, cid, aid, assignments.length, dispatch]);
 
     const handleSave = async () => {
-        if (isEditing) {
-            const updatedAssignment = { ...assignment, _id: aid };
-            await assignmentsClient.updateAssignment(updatedAssignment);
-            dispatch(updateAssignment(updatedAssignment));
-        } else {
-            const newAssignment = await assignmentsClient.createAssignment(assignment);
-            dispatch(addAssignment(newAssignment));
+        try {
+            if (isEditing) {
+                const updatedAssignment = { ...assignment, _id: aid };
+                await assignmentsClient.updateAssignment(updatedAssignment);
+                dispatch(updateAssignment(updatedAssignment));
+            } else {
+                const newAssignment = await assignmentsClient.createAssignmentForCourse(cid as string, assignment);
+                dispatch(addAssignment(newAssignment));
+            }
+            navigate(`/Kambaz/Courses/${cid}/Assignments`);
+        } catch (error) {
+            console.error("Failed to save assignment:", error);
+            alert("Failed to save assignment. Please try again.");
         }
-        navigate(`/Kambaz/Courses/${cid}/Assignments`);
     };
 
     const handleCancel = () => {
@@ -68,7 +111,15 @@ export default function AssignmentEditor() {
         setAssignment({ ...assignment, [field]: value });
     };
 
-    if (aid && !existingAssignment) {
+    if (loading) {
+        return (
+            <div id="wd-assignments-editor">
+                <h3>Loading...</h3>
+            </div>
+        );
+    }
+
+    if (aid && assignmentNotFound) {
         return (
             <div id="wd-assignments-editor">
                 <h3>Assignment not found</h3>

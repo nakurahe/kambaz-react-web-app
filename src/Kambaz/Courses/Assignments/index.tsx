@@ -7,7 +7,6 @@ import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { deleteAssignment, setAssignments } from "./reducer";
-import * as coursesClient from "../client";
 import * as assignmentsClient from "./client";
 
 export default function Assignments() {
@@ -19,19 +18,28 @@ export default function Assignments() {
     const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
 
     const fetchAssignments = async () => {
-        const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
-        dispatch(setAssignments(assignments));
+        try {
+            const assignments = await assignmentsClient.findAssignmentsForCourse(cid as string);
+            dispatch(setAssignments(assignments));
+        } catch (error) {
+            console.error("Failed to fetch assignments:", error);
+        }
     };
     
     useEffect(() => {
         fetchAssignments();
-    }, []);
+    }, [cid]);
 
     const handleDeleteAssignment = async (assignmentId: string) => {
         const confirmDelete = window.confirm("Are you sure you want to remove this assignment?");
         if (confirmDelete) {
-            await assignmentsClient.deleteAssignment(assignmentId);
-            dispatch(deleteAssignment(assignmentId));
+            try {
+                await assignmentsClient.deleteAssignment(assignmentId);
+                dispatch(deleteAssignment(assignmentId));
+            } catch (error) {
+                console.error("Failed to delete assignment:", error);
+                alert("Failed to delete assignment. Please try again.");
+            }
         }
     };
 
