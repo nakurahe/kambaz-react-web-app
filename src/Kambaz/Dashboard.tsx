@@ -26,7 +26,11 @@ export default function Dashboard() {
             try {
                 // Try to fetch from server first (if GET endpoint exists)
                 const enrollmentsData = await enrollmentsClient.findAllEnrollments(currentUser._id);
-                dispatch(setEnrollments(enrollmentsData));
+                // Filter out any null or invalid enrollments
+                const validEnrollments = enrollmentsData.filter((enrollment: any) => 
+                    enrollment && enrollment.user && enrollment.course
+                );
+                dispatch(setEnrollments(validEnrollments));
             } catch (error) {
                 console.error("Failed to load enrollments:", error);
                 // Fall back to local state if server isn't available
@@ -200,7 +204,7 @@ export default function Dashboard() {
                                             <Button variant="primary" size="sm"> Go </Button>
                                             
                                             {/* Enrollment buttons - show for any user when viewing all courses */}
-                                            {currentUser && showAllCourses && (
+                                            {currentUser && (
                                                 <div className="d-flex gap-2">
                                                     {isUserEnrolledInCourse(courseItem._id) ? (
                                                         <Button variant="danger" size="sm"
