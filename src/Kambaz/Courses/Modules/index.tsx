@@ -45,7 +45,7 @@ export default function Modules() {
     return (
         <div className="wd-modules">
             <ModulesControls setModuleName={setModuleName} moduleName={moduleName}
-            addModule={createModuleForCourse} /><br /><br /><br /><br />
+                addModule={createModuleForCourse} /><br /><br /><br /><br />
             <ListGroup className="rounded-0" id="wd-modules">
                 {modules
                     .map((module: any) => (
@@ -55,16 +55,12 @@ export default function Modules() {
                                 {!module.editing && module.name}
                                 {module.editing && (
                                     <FormControl className="w-50 d-inline-block"
-                                        onChange={(e) => 
-                                            dispatch(
-                                                updateModule({ ...module, name: e.target.value })
-                                            )
+                                        onChange={(e) =>
+                                            saveModule({ ...module, name: e.target.value })
                                         }
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                                const updatedModule = { ...module, editing: false, name: (e.target as HTMLInputElement).value };
-                                                dispatch(updateModule(updatedModule));
-                                                saveModule(updatedModule);
+                                                saveModule({ ...module, editing: false });
                                             }
                                         }}
                                         defaultValue={module.name} />
@@ -83,7 +79,7 @@ export default function Modules() {
                                             {!module.editing && lesson.name}
                                             {module.editing && (
                                                 <FormControl className="w-50 d-inline-block"
-                                                    onChange={(e) => 
+                                                    onChange={(e) =>
                                                         dispatch(
                                                             updateModule({ ...module, name: e.target.value })
                                                         )

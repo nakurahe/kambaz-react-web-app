@@ -43,3 +43,8 @@ export const createAssignmentForCourse = async (courseId: string, assignment: an
     );
     return response.data;
 };
+
+export const createCourse = async (course: any) => {
+    const { data } = await axiosWithCredentials.post(COURSES_API, course);
+    return data;
+};
