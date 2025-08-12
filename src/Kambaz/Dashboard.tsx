@@ -32,8 +32,29 @@ export default function Dashboard() {
                 // Fall back to local state if server isn't available
             }
         };
+
+        // Load initial courses data
+        const loadInitialCourses = async () => {
+            try {
+                if (showAllCourses) {
+                    // Load all courses when showAllCourses is true (default)
+                    const allCourses = await coursesClient.fetchAllCourses();
+                    dispatch(setCourses(allCourses));
+                } else {
+                    // Load user's courses when showAllCourses is false
+                    if (currentUser?._id) {
+                        const userCourses = await userClient.findMyCourses();
+                        dispatch(setCourses(userCourses));
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load courses:", error);
+            }
+        };
+
         loadEnrollments();
-    }, [currentUser]);
+        loadInitialCourses();
+    }, [currentUser, showAllCourses, dispatch]);
 
     const isUserEnrolledInCourse = (courseId: string) => {
         if (!currentUser) return false;

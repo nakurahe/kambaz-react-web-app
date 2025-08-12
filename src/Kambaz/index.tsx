@@ -10,7 +10,8 @@ import Session from "./Account/Session";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setCourses } from "./Courses/reducer";
-import * as userClient from "./Account/client";
+// import * as userClient from "./Account/client";
+import * as courseClient from "./Courses/client";
 
 export default function Kambaz() {
     const dispatch = useDispatch();
@@ -18,7 +19,7 @@ export default function Kambaz() {
 
     const fetchCourses = async () => {
         try {
-            const courses = await userClient.findMyCourses();
+            const courses = await courseClient.fetchAllCourses();
             dispatch(setCourses(courses));
         } catch (error) {
             console.error("Error fetching courses:", error);
