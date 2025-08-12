@@ -10,6 +10,7 @@ const MODULES_API = `${REMOTE_SERVER}/api/modules`;
 
 export const deleteModule = async (moduleId: string) => {
     const { data } = await axiosWithCredentials.delete(`${MODULES_API}/${moduleId}`);
+    console.log("Module deleted:", data);
     return data;
 };
 

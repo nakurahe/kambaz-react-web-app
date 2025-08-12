@@ -26,8 +26,8 @@ export default function PeopleTable({ people = [], onEdit, onDelete }: PeopleTab
                     </tr>
                 </thead>
                 <tbody>
-                    {people.map((user: any) => (
-                        <tr key={user._id}>
+                    {people.map((user: any, index: number) => (
+                        <tr key={`${user._id}-${index}`}>
                             <td className="wd-full-name text-nowrap">
                                 <Link to={`/Kambaz/Account/Users/${user._id}`} className="text-decoration-none text-dark">
                                     <FaUserCircle className="me-2 fs-1 text-secondary" />

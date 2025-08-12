@@ -85,6 +85,12 @@ export default function Dashboard() {
             try {
                 await enrollmentsClient.unenrollFromCourse(currentUser._id, courseId);
                 dispatch(unenrollFromCourse({ userId: currentUser._id, courseId }));
+                
+                // If we're currently showing "My Courses", refresh the course list to remove the unenrolled course
+                if (!showAllCourses) {
+                    const userCourses = await userClient.findMyCourses();
+                    dispatch(setCourses(userCourses));
+                }
             } catch (error) {
                 console.error("Failed to unenroll from course:", error);
                 alert("Failed to unenroll from course. Please try again.");
@@ -95,6 +101,11 @@ export default function Dashboard() {
     const handleAddNewCourse = async () => {
         const newCourse = await userClient.createCourse(course);
         dispatch(addCourse(newCourse));
+        
+        // Backend automatically enrolls the creator, so we need to update local enrollment state
+        if (currentUser && newCourse._id) {
+            dispatch(enrollInCourse({ userId: currentUser._id, courseId: newCourse._id }));
+        }
     };
 
     const handleUpdateCourse = async () => {
@@ -204,7 +215,7 @@ export default function Dashboard() {
                                             <Button variant="primary" size="sm"> Go </Button>
                                             
                                             {/* Enrollment buttons - show for any user when viewing all courses */}
-                                            {currentUser && (
+                                            {currentUser && showAllCourses && (
                                                 <div className="d-flex gap-2">
                                                     {isUserEnrolledInCourse(courseItem._id) ? (
                                                         <Button variant="danger" size="sm"
