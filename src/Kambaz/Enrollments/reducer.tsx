@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const initialState = {
     enrollments: [],
-    showAllCourses: true,
+    showAllCourses: false,
 };
 
 const enrollmentsSlice = createSlice({
