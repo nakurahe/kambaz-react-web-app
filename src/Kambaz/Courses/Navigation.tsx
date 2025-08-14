@@ -5,10 +5,10 @@ export default function CourseNavigation() {
     const links = [
         { label: "Home", path: `/Kambaz/Courses/${cid}/Home` },
         { label: "Modules", path: `/Kambaz/Courses/${cid}/Modules` },
+        { label: "Quizzes", path: `/Kambaz/Courses/${cid}/Quizzes` },
+        { label: "Assignments", path: `/Kambaz/Courses/${cid}/Assignments` },
         { label: "Piazza", path: `/Kambaz/Courses/${cid}/Piazza` },
         { label: "Zoom", path: `/Kambaz/Courses/${cid}/Zoom` },
-        { label: "Assignments", path: `/Kambaz/Courses/${cid}/Assignments` },
-        { label: "Quizzes", path: `/Kambaz/Courses/${cid}/Quizzes` },
         { label: "People", path: `/Kambaz/Courses/${cid}/People` },
     ];
 
