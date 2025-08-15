@@ -62,7 +62,7 @@ export default function Quizzes() {
     };
 
     const handleEditQuiz = (quizId: string) => {
-        navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}`);
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}/Editor`);
     };
 
     const getAvailabilityStatus = (quiz: any) => {
