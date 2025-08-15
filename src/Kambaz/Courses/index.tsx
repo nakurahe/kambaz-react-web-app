@@ -4,7 +4,7 @@ import Home from "./Home";
 import Assignments from "./Assignments";
 import AssignmentEditor from "./Assignments/Editor";
 import Quizzes from "./Quizzes";
-import QuizEditor from "./Quizzes/Editor";
+import QuizEditor from "./Quizzes/EditPage";
 import QuizDetail from "./Quizzes/QuizDetail";
 import { Navigate, Route, Routes, useParams, useLocation } from "react-router";
 import { FaAlignJustify } from "react-icons/fa";

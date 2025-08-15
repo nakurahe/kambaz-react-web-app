@@ -1,219 +1,37 @@
 import Form from "react-bootstrap/Form";
-import { useParams, useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { addQuiz, updateQuiz, setQuizzes } from "./reducer";
-import { useState, useEffect } from "react";
-import * as quizzesClient from "./client";
 
-export default function QuizEditor() {
-    const { cid, qid } = useParams();
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { quizzes } = useSelector((state: any) => state.quizzesReducer);
-    
-    const existingQuiz = qid ? quizzes.find((q: any) => q._id === qid) : null;
-    const isEditing = !!qid && !!existingQuiz;
+interface QuizDetailsProps {
+    quiz: any;
+    onInputChange: (field: string, value: any) => void;
+    onSave: (shouldPublish: boolean, shouldNavigate: boolean) => void;
+    onCancel: () => void;
+    loading: boolean;
+    isEditing: boolean;
+}
 
-    const [quiz, setQuiz] = useState({
-        title: "New Quiz",
-        description: "",
-        points: 100,
-        dueDate: "",
-        availableFrom: "",
-        availableUntil: "",
-        course: cid,
-        quizType: "Graded Quiz",
-        assignmentGroup: "Quizzes",
-        shuffleAnswers: true,
-        timeLimit: 20,
-        multipleAttempts: false,
-        howManyAttempts: 1,
-        showCorrectAnswers: false,
-        accessCode: "",
-        oneQuestionAtATime: true,
-        webcamRequired: false,
-        lockQuestionsAfterAnswering: false,
-        published: false,
-        questions: []
-    });
-    
-    const [loading, setLoading] = useState(false);
-    const [quizNotFound, setQuizNotFound] = useState(false);
-
-    useEffect(() => {
-        const fetchQuizzes = async () => {
-            try {
-                setLoading(true);
-                if (quizzes.length === 0) {
-                    const fetchedQuizzes = await quizzesClient.findQuizzesForCourse(cid as string);
-                    dispatch(setQuizzes(fetchedQuizzes));
-                }
-            } catch (error) {
-                console.error("Failed to fetch quizzes:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        const fetchSpecificQuiz = async () => {
-            if (qid && !existingQuiz) {
-                try {
-                    setLoading(true);
-                    const fetchedQuiz = await quizzesClient.findQuizById(qid);
-                    if (fetchedQuiz) {
-                        const formatDate = (dateString: string) => {
-                            if (!dateString) return "";
-                            const date = new Date(dateString);
-                            return date.toISOString().split('T')[0];
-                        };
-                        
-                        setQuiz({
-                            ...fetchedQuiz,
-                            dueDate: formatDate(fetchedQuiz.dueDate),
-                            availableFrom: formatDate(fetchedQuiz.availableFrom),
-                            availableUntil: formatDate(fetchedQuiz.availableUntil),
-                            // Ensure all boolean and number fields have defaults
-                            shuffleAnswers: fetchedQuiz.shuffleAnswers ?? true,
-                            timeLimit: fetchedQuiz.timeLimit ?? 20,
-                            multipleAttempts: fetchedQuiz.multipleAttempts ?? false,
-                            howManyAttempts: fetchedQuiz.howManyAttempts ?? 1,
-                            showCorrectAnswers: fetchedQuiz.showCorrectAnswers ?? false,
-                            accessCode: fetchedQuiz.accessCode ?? "",
-                            oneQuestionAtATime: fetchedQuiz.oneQuestionAtATime ?? true,
-                            webcamRequired: fetchedQuiz.webcamRequired ?? false,
-                            lockQuestionsAfterAnswering: fetchedQuiz.lockQuestionsAfterAnswering ?? false,
-                            quizType: fetchedQuiz.quizType ?? "Graded Quiz",
-                            assignmentGroup: fetchedQuiz.assignmentGroup ?? "Quizzes",
-                            published: fetchedQuiz.published ?? false,
-                            questions: fetchedQuiz.questions ?? []
-                        });
-                    } else {
-                        setQuizNotFound(true);
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch quiz:", error);
-                    setQuizNotFound(true);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchQuizzes();
-        if (qid) {
-            fetchSpecificQuiz();
-        }
-    }, [cid, qid, dispatch, quizzes.length, existingQuiz]);
-
-    useEffect(() => {
-        if (existingQuiz && !loading) {
-            const formatDate = (dateString: string) => {
-                if (!dateString) return "";
-                const date = new Date(dateString);
-                return date.toISOString().split('T')[0];
-            };
-            
-            setQuiz({
-                ...existingQuiz,
-                dueDate: formatDate(existingQuiz.dueDate),
-                availableFrom: formatDate(existingQuiz.availableFrom),
-                availableUntil: formatDate(existingQuiz.availableUntil),
-                // Ensure all boolean and number fields have defaults
-                shuffleAnswers: existingQuiz.shuffleAnswers ?? true,
-                timeLimit: existingQuiz.timeLimit ?? 20,
-                multipleAttempts: existingQuiz.multipleAttempts ?? false,
-                howManyAttempts: existingQuiz.howManyAttempts ?? 1,
-                showCorrectAnswers: existingQuiz.showCorrectAnswers ?? false,
-                accessCode: existingQuiz.accessCode ?? "",
-                oneQuestionAtATime: existingQuiz.oneQuestionAtATime ?? true,
-                webcamRequired: existingQuiz.webcamRequired ?? false,
-                lockQuestionsAfterAnswering: existingQuiz.lockQuestionsAfterAnswering ?? false,
-                quizType: existingQuiz.quizType ?? "Graded Quiz",
-                assignmentGroup: existingQuiz.assignmentGroup ?? "Quizzes",
-                published: existingQuiz.published ?? false,
-                questions: existingQuiz.questions ?? []
-            });
-        }
-    }, [existingQuiz, loading]);
-
-    const handleCancel = () => {
-        navigate(`/Kambaz/Courses/${cid}/Quizzes`);
-    };
-
-    const handleInputChange = (field: string, value: any) => {
-        setQuiz({ ...quiz, [field]: value });
-    };
-
-    const handleSave = async (shouldPublish = false, shouldNavigate = true) => {
-        try {
-            setLoading(true);
-            
-            // Create ISO date strings for server
-            const quizData = {
-                ...quiz,
-                dueDate: quiz.dueDate ? new Date(quiz.dueDate).toISOString() : "",
-                availableFrom: quiz.availableFrom ? new Date(quiz.availableFrom).toISOString() : "",
-                availableUntil: quiz.availableUntil ? new Date(quiz.availableUntil).toISOString() : "",
-                published: shouldPublish ? true : quiz.published // Set published status
-            };
-
-            if (isEditing) {
-                const updatedQuiz = await quizzesClient.updateQuiz(quizData);
-                dispatch(updateQuiz(updatedQuiz));
-            } else {
-                const newQuiz = await quizzesClient.createQuizForCourse(cid as string, quizData);
-                dispatch(addQuiz(newQuiz));
-            }
-
-            if (!shouldNavigate) {
-                window.location.reload();
-            } else {
-                navigate(`/Kambaz/Courses/${cid}/Quizzes`);
-            }
-        } catch (error) {
-            console.error("Failed to save quiz:", error);
-            alert("Failed to save quiz. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
+export default function QuizDetails({ 
+    quiz, 
+    onInputChange, 
+    onSave, 
+    onCancel, 
+    loading
+}: QuizDetailsProps) {
     const handleSaveOnly = () => {
-        handleSave(false, false); // Don't navigate
+        onSave(false, false); // Don't navigate
     };
 
     const handleSaveAndPublish = () => {
-        handleSave(true, true); // Navigate back to list
+        onSave(true, true); // Navigate back to list
     };
 
-    if (loading) {
-        return (
-            <div id="wd-quiz-editor">
-                <h3>Loading...</h3>
-            </div>
-        );
-    }
-
-    if (quizNotFound) {
-        return (
-            <div id="wd-quiz-editor">
-                <h3>Quiz not found</h3>
-                <button onClick={handleCancel} className="btn btn-secondary">
-                    Back to Quizzes
-                </button>
-            </div>
-        );
-    }
-
     return (
-        <div id="wd-quiz-editor">
-            <h3>{isEditing ? "Edit Quiz" : "New Quiz"}</h3>
+        <div id="wd-quiz-details">
             <Form.Group controlId="wd-name">
                 <Form.Label>Quiz Name</Form.Label>
                 <Form.Control 
                     type="text" 
                     value={quiz.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    onChange={(e) => onInputChange("title", e.target.value)}
                 />
             </Form.Group>
             <Form.Group controlId="wd-description">
@@ -222,7 +40,7 @@ export default function QuizEditor() {
                     as="textarea" 
                     rows={5} 
                     value={quiz.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    onChange={(e) => onInputChange("description", e.target.value)}
                 />
             </Form.Group>
             <br />
@@ -235,7 +53,7 @@ export default function QuizEditor() {
                     <Form.Select 
                         id="wd-quiz-type" 
                         value={quiz.quizType}
-                        onChange={(e) => handleInputChange("quizType", e.target.value)}
+                        onChange={(e) => onInputChange("quizType", e.target.value)}
                     >
                         <option value="Graded Quiz">Graded Quiz</option>
                         <option value="Practice Quiz">Practice Quiz</option>
@@ -254,7 +72,7 @@ export default function QuizEditor() {
                         id="wd-points" 
                         type="number" 
                         value={quiz.points}
-                        onChange={(e) => handleInputChange("points", parseInt(e.target.value) || 0)}
+                        onChange={(e) => onInputChange("points", parseInt(e.target.value) || 0)}
                     />
                 </div>
             </Form.Group>
@@ -267,7 +85,7 @@ export default function QuizEditor() {
                     <Form.Select 
                         id="wd-assignment-group" 
                         value={quiz.assignmentGroup}
-                        onChange={(e) => handleInputChange("assignmentGroup", e.target.value)}
+                        onChange={(e) => onInputChange("assignmentGroup", e.target.value)}
                     >
                         <option value="Quizzes">Quizzes</option>
                         <option value="Exams">Exams</option>
@@ -288,7 +106,7 @@ export default function QuizEditor() {
                             id="wd-shuffle-answers" 
                             label="Shuffle Answers"
                             checked={quiz.shuffleAnswers}
-                            onChange={(e) => handleInputChange("shuffleAnswers", e.target.checked)}
+                            onChange={(e) => onInputChange("shuffleAnswers", e.target.checked)}
                         />
                         
                         <Form.Group className="row mb-3 mt-3">
@@ -301,7 +119,7 @@ export default function QuizEditor() {
                                         id="wd-time-limit" 
                                         type="number" 
                                         value={quiz.timeLimit}
-                                        onChange={(e) => handleInputChange("timeLimit", parseInt(e.target.value) || 0)}
+                                        onChange={(e) => onInputChange("timeLimit", parseInt(e.target.value) || 0)}
                                         style={{ width: "100px" }}
                                     />
                                     <span className="ms-2">Minutes</span>
@@ -314,7 +132,7 @@ export default function QuizEditor() {
                             id="wd-multiple-attempts" 
                             label="Allow Multiple Attempts"
                             checked={quiz.multipleAttempts}
-                            onChange={(e) => handleInputChange("multipleAttempts", e.target.checked)}
+                            onChange={(e) => onInputChange("multipleAttempts", e.target.checked)}
                         />
 
                         {quiz.multipleAttempts && (
@@ -327,7 +145,7 @@ export default function QuizEditor() {
                                         id="wd-attempts" 
                                         type="number" 
                                         value={quiz.howManyAttempts}
-                                        onChange={(e) => handleInputChange("howManyAttempts", parseInt(e.target.value) || 1)}
+                                        onChange={(e) => onInputChange("howManyAttempts", parseInt(e.target.value) || 1)}
                                         style={{ width: "100px" }}
                                     />
                                 </div>
@@ -339,7 +157,7 @@ export default function QuizEditor() {
                             id="wd-show-correct-answers" 
                             label="Show Correct Answers"
                             checked={quiz.showCorrectAnswers}
-                            onChange={(e) => handleInputChange("showCorrectAnswers", e.target.checked)}
+                            onChange={(e) => onInputChange("showCorrectAnswers", e.target.checked)}
                         />
 
                         <Form.Group className="mb-3 mt-3">
@@ -348,7 +166,7 @@ export default function QuizEditor() {
                                 id="wd-access-code" 
                                 type="text" 
                                 value={quiz.accessCode}
-                                onChange={(e) => handleInputChange("accessCode", e.target.value)}
+                                onChange={(e) => onInputChange("accessCode", e.target.value)}
                                 placeholder="Optional access code"
                             />
                         </Form.Group>
@@ -358,7 +176,7 @@ export default function QuizEditor() {
                             id="wd-one-question-at-time" 
                             label="One Question at a Time"
                             checked={quiz.oneQuestionAtATime}
-                            onChange={(e) => handleInputChange("oneQuestionAtATime", e.target.checked)}
+                            onChange={(e) => onInputChange("oneQuestionAtATime", e.target.checked)}
                         />
 
                         <Form.Check 
@@ -366,7 +184,7 @@ export default function QuizEditor() {
                             id="wd-webcam-required" 
                             label="Webcam Required"
                             checked={quiz.webcamRequired}
-                            onChange={(e) => handleInputChange("webcamRequired", e.target.checked)}
+                            onChange={(e) => onInputChange("webcamRequired", e.target.checked)}
                         />
 
                         <Form.Check 
@@ -374,7 +192,7 @@ export default function QuizEditor() {
                             id="wd-lock-questions" 
                             label="Lock Questions After Answering"
                             checked={quiz.lockQuestionsAfterAnswering}
-                            onChange={(e) => handleInputChange("lockQuestionsAfterAnswering", e.target.checked)}
+                            onChange={(e) => onInputChange("lockQuestionsAfterAnswering", e.target.checked)}
                         />
                     </div>
                 </div>
@@ -397,7 +215,7 @@ export default function QuizEditor() {
                                 id="wd-due-date" 
                                 type="date" 
                                 value={quiz.dueDate}
-                                onChange={(e) => handleInputChange("dueDate", e.target.value)}
+                                onChange={(e) => onInputChange("dueDate", e.target.value)}
                             />
                         </Form.Group>
                         
@@ -409,7 +227,7 @@ export default function QuizEditor() {
                                         id="wd-available-from" 
                                         type="date" 
                                         value={quiz.availableFrom}
-                                        onChange={(e) => handleInputChange("availableFrom", e.target.value)}
+                                        onChange={(e) => onInputChange("availableFrom", e.target.value)}
                                     />
                                 </Form.Group>
                             </div>
@@ -420,7 +238,7 @@ export default function QuizEditor() {
                                         id="wd-available-until" 
                                         type="date" 
                                         value={quiz.availableUntil}
-                                        onChange={(e) => handleInputChange("availableUntil", e.target.value)}
+                                        onChange={(e) => onInputChange("availableUntil", e.target.value)}
                                     />
                                 </Form.Group>
                             </div>
@@ -431,7 +249,7 @@ export default function QuizEditor() {
             <hr />
             <div className="text-end">
                 <button 
-                    onClick={handleCancel} 
+                    onClick={onCancel} 
                     className="btn btn-secondary me-2"
                     disabled={loading}
                 >
