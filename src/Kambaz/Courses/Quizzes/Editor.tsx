@@ -32,7 +32,9 @@ export default function QuizEditor() {
         accessCode: "",
         oneQuestionAtATime: true,
         webcamRequired: false,
-        lockQuestionsAfterAnswering: false
+        lockQuestionsAfterAnswering: false,
+        published: false,
+        questions: []
     });
     
     const [loading, setLoading] = useState(false);
@@ -81,7 +83,9 @@ export default function QuizEditor() {
                             webcamRequired: fetchedQuiz.webcamRequired ?? false,
                             lockQuestionsAfterAnswering: fetchedQuiz.lockQuestionsAfterAnswering ?? false,
                             quizType: fetchedQuiz.quizType ?? "Graded Quiz",
-                            assignmentGroup: fetchedQuiz.assignmentGroup ?? "Quizzes"
+                            assignmentGroup: fetchedQuiz.assignmentGroup ?? "Quizzes",
+                            published: fetchedQuiz.published ?? false,
+                            questions: fetchedQuiz.questions ?? []
                         });
                     } else {
                         setQuizNotFound(true);
@@ -125,7 +129,9 @@ export default function QuizEditor() {
                 webcamRequired: existingQuiz.webcamRequired ?? false,
                 lockQuestionsAfterAnswering: existingQuiz.lockQuestionsAfterAnswering ?? false,
                 quizType: existingQuiz.quizType ?? "Graded Quiz",
-                assignmentGroup: existingQuiz.assignmentGroup ?? "Quizzes"
+                assignmentGroup: existingQuiz.assignmentGroup ?? "Quizzes",
+                published: existingQuiz.published ?? false,
+                questions: existingQuiz.questions ?? []
             });
         }
     }, [existingQuiz, loading]);

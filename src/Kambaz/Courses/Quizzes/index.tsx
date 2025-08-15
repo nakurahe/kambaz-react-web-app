@@ -1,12 +1,13 @@
 import { IoIosSearch } from "react-icons/io";
-import { FaPlus, FaTrash } from "react-icons/fa6";
+import { FaPlus, FaCheckCircle } from "react-icons/fa";
 import { BsGripVertical } from "react-icons/bs";
-import { ListGroup } from "react-bootstrap";
-import GreenCheckmark from "../Modules/GreenCheckmark";
+import { IoEllipsisVertical } from "react-icons/io5";
+import { ListGroup, Dropdown } from "react-bootstrap";
+import { TbCircleDashedCheck } from "react-icons/tb";
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
-import { deleteQuiz, setQuizzes } from "./reducer";
+import { deleteQuiz, setQuizzes, updateQuiz } from "./reducer";
 import * as quizzesClient from "./client";
 
 export default function Quizzes() {
@@ -15,7 +16,13 @@ export default function Quizzes() {
     const dispatch = useDispatch();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const courseQuizzes = quizzes.filter((quiz: any) => quiz.course === cid);
+    const courseQuizzes = quizzes
+        .filter((quiz: any) => quiz.course === cid)
+        .sort((a: any, b: any) => {
+            const dateA = new Date(a.availableFrom || 0).getTime();
+            const dateB = new Date(b.availableFrom || 0).getTime();
+            return dateA - dateB; // Sort in ascending order (earliest first)
+        });
 
     const fetchQuizzes = async () => {
         try {
@@ -41,6 +48,44 @@ export default function Quizzes() {
                 alert("Failed to delete quiz. Please try again.");
             }
         }
+    };
+
+    const handleTogglePublish = async (quiz: any) => {
+        try {
+            const updatedQuiz = { ...quiz, published: !quiz.published };
+            await quizzesClient.updateQuiz(updatedQuiz);
+            dispatch(updateQuiz(updatedQuiz));
+        } catch (error) {
+            console.error("Failed to update quiz:", error);
+            alert("Failed to update quiz. Please try again.");
+        }
+    };
+
+    const handleEditQuiz = (quizId: string) => {
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}`);
+    };
+
+    const getAvailabilityStatus = (quiz: any) => {
+        const now = new Date();
+        const availableFrom = new Date(quiz.availableFrom);
+        const availableUntil = new Date(quiz.availableUntil);
+
+        if (now < availableFrom) {
+            return `Not available until ${availableFrom.toLocaleDateString()}`;
+        } else if (now > availableUntil) {
+            return "Closed";
+        } else {
+            return "Available";
+        }
+    };
+
+    const getQuizScore = (quiz: any) => {
+        // TODO: This would typically come from quiz attempts/submissions data
+        // For now, return a placeholder for students
+        if (currentUser.role === "STUDENT") {
+            return "-- / 100"; // Placeholder score
+        }
+        return null;
     };
 
     return (
@@ -93,20 +138,52 @@ export default function Quizzes() {
                                         </button>
                                     </div>
                                     <div className="d-flex align-items-center">
-                                        <GreenCheckmark />
+                                        {quiz.published ? (
+                                            <FaCheckCircle 
+                                                className="text-success me-2" 
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => handleTogglePublish(quiz)}
+                                                title="Click to unpublish"
+                                            />
+                                        ) : (
+                                            <TbCircleDashedCheck 
+                                                className="text-secondary me-2" 
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => handleTogglePublish(quiz)}
+                                                title="Click to publish"
+                                            />
+                                        )}
                                         {currentUser.role === "FACULTY" && (
-                                            <button 
-                                                className="btn btn-danger btn-sm ms-2"
-                                                onClick={() => handleDeleteQuiz(quiz._id)}
-                                                title="Delete Quiz"
-                                            >
-                                                <FaTrash />
-                                            </button>
+                                            <Dropdown>
+                                                <Dropdown.Toggle 
+                                                    variant="link" 
+                                                    className="text-dark p-0 border-0 bg-transparent"
+                                                    id={`dropdown-quiz-${quiz._id}`}
+                                                    bsPrefix="btn"
+                                                    style={{ boxShadow: 'none' }}
+                                                >
+                                                    <IoEllipsisVertical />
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handleEditQuiz(quiz._id)}>
+                                                        Edit
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDeleteQuiz(quiz._id)}>
+                                                        Delete
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleTogglePublish(quiz)}>
+                                                        {quiz.published ? "Unpublish" : "Publish"}
+                                                    </Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
                                         )}
                                     </div>
                                 </div>
                                 <div className="wd-quiz-list-item-description text-muted small ms-4">
-                                    Multiple Modules | <b>Not available until</b> {new Date(quiz.availableFrom).toLocaleDateString()} | <b>Due</b> {new Date(quiz.dueDate).toLocaleDateString()} | <b>{quiz.points} pts</b>
+                                    <b>{getAvailabilityStatus(quiz)}</b> | <b>Due</b> {new Date(quiz.dueDate).toLocaleDateString()} | <b>{quiz.points} pts</b> | <b>{quiz.questions?.length || 0} questions</b>
+                                    {currentUser.role === "STUDENT" && getQuizScore(quiz) && (
+                                        <span> | <b>Score:</b> {getQuizScore(quiz)}</span>
+                                    )}
                                 </div>
                             </ListGroup.Item>
                         ))}
