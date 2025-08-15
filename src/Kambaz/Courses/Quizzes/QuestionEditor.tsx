@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Button, ListGroup } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
+import * as questionsClient from "./questionsClient";
 
 export default function QuestionEditor() {
     const { qid } = useParams();
@@ -12,49 +13,28 @@ export default function QuestionEditor() {
     const questionsEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (quiz && quiz.questions) {
-            setQuestions(quiz.questions);
-        } else if (quiz && (!quiz.questions || quiz.questions.length === 0)) {
-            // Add sample questions for testing if no questions exist
-            const sampleQuestions = [
-                {
-                    _id: "question_sample_1",
-                    title: "Sample Multiple Choice Question",
-                    type: "Multiple Choice",
-                    points: 5,
-                    question: "What is the capital of France?",
-                    answers: [
-                        { text: "London", correct: false },
-                        { text: "Berlin", correct: false },
-                        { text: "Paris", correct: true },
-                        { text: "Madrid", correct: false }
-                    ]
-                },
-                {
-                    _id: "question_sample_2",
-                    title: "Sample True/False Question",
-                    type: "True/False",
-                    points: 3,
-                    question: "React is a JavaScript library for building user interfaces.",
-                    answers: [
-                        { text: "True", correct: true },
-                        { text: "False", correct: false }
-                    ]
+        const fetchQuestions = async () => {
+            if (qid) {
+                try {
+                    const questions = await questionsClient.findQuestionsForQuiz(qid);
+                    setQuestions(questions);
+                } catch (error) {
+                    setQuestions([]);
                 }
-            ];
-            setQuestions(sampleQuestions);
-        }
-    }, [quiz]);
+            }
+        };
+        fetchQuestions();
+    }, [qid]);
 
     const scrollToBottom = () => {
         questionsEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const handleAddQuestion = () => {
+    const handleAddQuestion = async () => {
+        if (!qid) return;
         const newQuestion = {
-            _id: `question_${Date.now()}`,
             title: `Question ${questions.length + 1}`,
-            type: "Multiple Choice",
+            questionType: "Multiple Choice",
             points: 1,
             question: "",
             answers: [
@@ -64,18 +44,24 @@ export default function QuestionEditor() {
                 { text: "", correct: false }
             ]
         };
-        
-        const updatedQuestions = [...questions, newQuestion];
-        setQuestions(updatedQuestions);
-        
-        // Scroll to the new question after a brief delay to ensure DOM update
-        setTimeout(scrollToBottom, 100);
+        try {
+            const created = await questionsClient.createQuestionForQuiz(qid, newQuestion);
+            setQuestions([...questions, created]);
+            setTimeout(scrollToBottom, 100);
+        } catch (error) {
+            // handle error
+        }
     };
 
-    const handleDeleteQuestion = (questionId: string) => {
+    const handleDeleteQuestion = async (questionId: string) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this question?");
         if (confirmDelete) {
-            setQuestions(questions.filter(q => q._id !== questionId));
+            try {
+                await questionsClient.deleteQuestion(questionId);
+                setQuestions(questions.filter(q => q._id !== questionId));
+            } catch (error) {
+                // handle error
+            }
         }
     };
 
