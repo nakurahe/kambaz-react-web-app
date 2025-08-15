@@ -144,7 +144,7 @@ export default function QuizEditor() {
         setQuiz({ ...quiz, [field]: value });
     };
 
-    const handleSave = async () => {
+    const handleSave = async (shouldPublish = false, shouldNavigate = true) => {
         try {
             setLoading(true);
             
@@ -153,7 +153,8 @@ export default function QuizEditor() {
                 ...quiz,
                 dueDate: quiz.dueDate ? new Date(quiz.dueDate).toISOString() : "",
                 availableFrom: quiz.availableFrom ? new Date(quiz.availableFrom).toISOString() : "",
-                availableUntil: quiz.availableUntil ? new Date(quiz.availableUntil).toISOString() : ""
+                availableUntil: quiz.availableUntil ? new Date(quiz.availableUntil).toISOString() : "",
+                published: shouldPublish ? true : quiz.published // Set published status
             };
 
             if (isEditing) {
@@ -163,14 +164,26 @@ export default function QuizEditor() {
                 const newQuiz = await quizzesClient.createQuizForCourse(cid as string, quizData);
                 dispatch(addQuiz(newQuiz));
             }
-            
-            navigate(`/Kambaz/Courses/${cid}/Quizzes`);
+
+            if (!shouldNavigate) {
+                window.location.reload();
+            } else {
+                navigate(`/Kambaz/Courses/${cid}/Quizzes`);
+            }
         } catch (error) {
             console.error("Failed to save quiz:", error);
             alert("Failed to save quiz. Please try again.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSaveOnly = () => {
+        handleSave(false, false); // Don't navigate
+    };
+
+    const handleSaveAndPublish = () => {
+        handleSave(true, true); // Navigate back to list
     };
 
     if (loading) {
@@ -425,11 +438,18 @@ export default function QuizEditor() {
                     Cancel
                 </button>
                 <button 
-                    onClick={handleSave} 
-                    className="btn btn-danger"
+                    onClick={handleSaveOnly} 
+                    className="btn btn-warning me-2"
                     disabled={loading}
                 >
                     {loading ? "Saving..." : "Save"}
+                </button>
+                <button 
+                    onClick={handleSaveAndPublish} 
+                    className="btn btn-danger"
+                    disabled={loading}
+                >
+                    {loading ? "Saving..." : "Save & Publish"}
                 </button>
             </div>
         </div>

@@ -80,10 +80,16 @@ export default function Quizzes() {
     };
 
     const getQuizScore = (quiz: any) => {
-        // TODO: This would typically come from quiz attempts/submissions data
-        // For now, return a placeholder for students
+        // This would typically come from quiz attempts/submissions data
+        // You would fetch this from your backend: /api/quizzes/{quizId}/attempts?userId={currentUser._id}
         if (currentUser.role === "STUDENT") {
-            return "-- / 100"; // Placeholder score
+            // Simulate different scores based on quiz ID for demo
+            const mockScores: { [key: string]: string } = {
+                "Q101": "85 / 100",
+                "Q102": "-- / 150", // No attempt yet
+                "Q103": "72 / 75"
+            };
+            return mockScores[quiz._id] || "-- / " + quiz.points;
         }
         return null;
     };
