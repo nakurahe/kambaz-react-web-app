@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Table } from "react-bootstrap";
 import { useEffect } from "react";
-import { setQuizzes } from "./reducer";
+import { updateQuiz } from "./reducer";
 import * as quizzesClient from "./client";
 
 export default function QuizDetail() {
@@ -15,19 +15,20 @@ export default function QuizDetail() {
     const quiz = quizzes.find((q: any) => q._id === qid);
 
     useEffect(() => {
-        const fetchQuizzes = async () => {
+        const fetchQuiz = async () => {
             try {
-                if (quizzes.length === 0) {
-                    const fetchedQuizzes = await quizzesClient.findQuizzesForCourse(cid as string);
-                    dispatch(setQuizzes(fetchedQuizzes));
+                if (qid) {
+                    const fetchedQuiz = await quizzesClient.findQuizById(qid as string);
+                    if (fetchedQuiz) {
+                        dispatch(updateQuiz(fetchedQuiz));
+                    }
                 }
             } catch (error) {
-                console.error("Failed to fetch quizzes:", error);
+                console.error("Failed to fetch quiz:", error);
             }
         };
-        
-        fetchQuizzes();
-    }, [cid, dispatch, quizzes.length, qid]);
+        fetchQuiz();
+    }, [qid, dispatch]);
     
     if (!quiz && quizzes.length > 0) {
         return (
