@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useSelector } from "react-redux";
 import { Button, Dropdown, Form } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
@@ -7,7 +7,8 @@ import * as questionsClient from "./questionsClient";
 import QuestionPreview from "./QuestionPreview";
 
 export default function QuestionEditor() {
-    const { qid } = useParams();
+    const { qid, cid } = useParams();
+    const navigate = useNavigate();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);
@@ -78,6 +79,32 @@ export default function QuestionEditor() {
         setEditingId(null);
         setEditData(null);
         setIsNew(false);
+    };
+
+    // Cancel all changes and delete all saved questions
+    const handleCancelAll = async () => {
+        const confirmCancel = window.confirm("Are you sure you want to delete all questions? This action cannot be undone.");
+        if (confirmCancel) {
+            try {
+                // Delete all questions for this quiz
+                for (const question of questions) {
+                    await questionsClient.deleteQuestion(question._id);
+                }
+                setQuestions([]);
+                setEditingId(null);
+                setEditData(null);
+                setIsNew(false);
+                navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Editor`);
+            } catch (error) {
+                console.error("Failed to delete questions:", error);
+                alert("Failed to delete questions. Please try again.");
+            }
+        }
+    };
+
+    // Save and redirect to quiz editor
+    const handleSaveAndRedirect = () => {
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`);
     };
 
     // Save or update question
@@ -280,12 +307,12 @@ export default function QuestionEditor() {
 
     return (
         <div id="wd-question-editor" className="p-3">
-            <div className="d-flex justify-content-start mb-4">
+            <div className="d-flex justify-content-center mb-4">
                 <Button
-                    variant="danger"
+                    variant="light"
                     size="lg"
                     onClick={handleAddQuestion}
-                    className="d-flex align-items-center"
+                    className="d-flex align-items-center border"
                 >
                     <FaPlus className="me-2" />
                     New Question
@@ -324,6 +351,23 @@ export default function QuestionEditor() {
                     <p className="text-muted">Click "New Question" to add your first question.</p>
                 </div>
             )}
+
+            {/* Cancel and Save buttons */}
+            <hr />
+            <div className="text-end">
+                <button 
+                    onClick={handleCancelAll} 
+                    className="btn btn-secondary me-2"
+                >
+                    Cancel
+                </button>
+                <button 
+                    onClick={handleSaveAndRedirect} 
+                    className="btn btn-warning"
+                >
+                    Save
+                </button>
+            </div>
 
             <div ref={questionsEndRef} />
         </div>
