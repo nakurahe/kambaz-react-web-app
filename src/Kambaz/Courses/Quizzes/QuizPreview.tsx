@@ -35,6 +35,11 @@ export default function QuizPreview() {
         setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1));
     };
 
+    const handleSubmitQuiz = () => {
+        // In a real application, this would submit the quiz answers
+        alert(`Quiz "${quiz.title}" submitted successfully!\n\nThis is a preview mode - no actual submission occurred.`);
+    };
+
     const currentQuestion = questions[currentQuestionIndex];
 
     if (!quiz) {
@@ -106,6 +111,20 @@ export default function QuizPreview() {
                             isPreviewMode={true}
                             globalQuestions={questions}
                         />
+                    )}
+
+                    {/* Submit Section on Last Question */}
+                    {currentQuestionIndex === questions.length - 1 && (
+                        <div className="text-end">
+                            <Button 
+                                variant="success" 
+                                size="sm"
+                                onClick={handleSubmitQuiz}
+                                className="px-5"
+                            >
+                                Submit
+                            </Button>
+                        </div>
                     )}
                 </div>
             )}
