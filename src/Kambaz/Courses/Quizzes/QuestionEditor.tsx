@@ -238,10 +238,11 @@ export default function QuestionEditor() {
                 )}
                 {questionType === "FillInBlank" && (
                     <>
-                        <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Correct Answers:</div>
+                        <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Answers:</div>
                         {editData.correctAnswers.map((answer: string, idx: number) => (
                             <div key={idx} className="d-flex align-items-center mb-2">
-                                <Form.Control type="text" value={answer ?? ""} placeholder={`Correct Answer ${idx + 1}`} onChange={e => {
+                                <Form.Label className="me-2">Possible Answer: </Form.Label>
+                                <Form.Control type="text" value={answer ?? ""} placeholder={`Correct Answer ${idx + 1}`} style={{ width: '250px' }} onChange={e => {
                                     const newCorrectAnswers = editData.correctAnswers.map((a: string, i: number) => i === idx ? e.target.value : a);
                                     setEditData({ ...editData, correctAnswers: newCorrectAnswers });
                                 }} />
@@ -294,25 +295,6 @@ export default function QuestionEditor() {
             {/* Show all questions in edit form mode */}
             {questions.map((question) => (
                 <div key={question._id} className="mb-4">
-                    {/* <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h5 className="mb-0">Question {index + 1}</h5>
-                        <div className="d-flex gap-2">
-                            <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleEditQuestion(question._id)}
-                            >
-                                Edit
-                            </Button>
-                            <Button 
-                                variant="outline-danger" 
-                                size="sm"
-                                onClick={() => handleDeleteQuestion(question._id)}
-                            >
-                                Delete
-                            </Button>
-                        </div>
-                    </div> */}
                     {editingId === question._id ? (
                         renderEditForm()
                     ) : (
@@ -321,6 +303,7 @@ export default function QuestionEditor() {
                             onEdit={handleEditQuestion}
                             onDelete={handleDeleteQuestion}
                             isPreviewMode={false}
+                            globalQuestions={questions}
                         />
                     )}
                 </div>

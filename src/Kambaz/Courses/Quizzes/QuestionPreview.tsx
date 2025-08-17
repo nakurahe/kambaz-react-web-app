@@ -1,19 +1,25 @@
 import { Button, ListGroup, Form } from "react-bootstrap";
 
-export default function QuestionPreview({ questions, onEdit, onDelete, isPreviewMode = false }: {
+export default function QuestionPreview({ questions, onEdit, onDelete, isPreviewMode = false, globalQuestions }: {
     questions: any[];
     onEdit: (questionId: string) => void;
     onDelete: (questionId: string) => void;
     isPreviewMode?: boolean;
+    globalQuestions?: any[];
 }) {
     const renderQuestionContent = (question: any, index: number) => {
         const questionTitle = question.title || "Untitled Question";
         const questionDescription = question.questionDescription || "";
         
+        // If globalQuestions is provided, find the correct index from the full list
+        const actualIndex = globalQuestions ? 
+            globalQuestions.findIndex(q => q._id === question._id) : 
+            index;
+        
         return (
             <div className="flex-grow-1">
                 <h6 className="fw-bold mb-2 text-primary">
-                    Question {index + 1}: {questionTitle}
+                    Question {actualIndex + 1}: {questionTitle}
                 </h6>
                 <div className="text-muted small mb-2">
                     <span className="badge bg-secondary me-2">{question.questionType}</span>
