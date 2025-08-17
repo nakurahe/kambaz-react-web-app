@@ -51,9 +51,7 @@ export default function QuizDetail() {
     };
 
     const handlePreview = () => {
-        // For now, just navigate to the quiz detail page
-        // You can implement a preview mode later
-        console.log("Preview mode - to be implemented");
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Preview`);
     };
 
     const handleStartQuiz = () => {

@@ -11,8 +11,8 @@ export default function QuestionEditor() {
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);
-    const [editingId, setEditingId] = useState<string|null>(null);
-    const [editData, setEditData] = useState<any|null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editData, setEditData] = useState<any | null>(null);
     const [isNew, setIsNew] = useState(false);
     const questionsEndRef = useRef<HTMLDivElement>(null);
 
@@ -128,6 +128,7 @@ export default function QuestionEditor() {
             <div className="border rounded p-4 mb-4" style={{ background: '#f9f9f9' }}>
                 <div className="d-flex align-items-center mb-3">
                     <Dropdown className="me-3">
+                        <Form.Label className="me-2 fw-bold">Question Type:</Form.Label>
                         <Dropdown.Toggle variant="outline-secondary" id="dropdown-question-type">
                             {questionType}
                         </Dropdown.Toggle>
@@ -150,7 +151,7 @@ export default function QuestionEditor() {
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
-                    <Form.Label className="me-2">Points:</Form.Label>
+                    <Form.Label className="me-2 fw-bold">Points:</Form.Label>
                     <Form.Control type="number" style={{ width: 80 }} value={editData.points ?? 1} min={1} onChange={e => setEditData({ ...editData, points: Number(e.target.value) })} />
                 </div>
                 <hr />
@@ -166,7 +167,7 @@ export default function QuestionEditor() {
                                 <Form.Check type="radio" name="correctAnswer" checked={editData.correctAnswers[0] === answer} onChange={() => {
                                     setEditData({ ...editData, correctAnswers: [answer] });
                                 }} className="me-2" />
-                                <Form.Control type="text" value={answer ?? ""} placeholder={`Answer ${idx + 1}`} onChange={e => {
+                                <Form.Control type="text" value={answer ?? ""} placeholder={`Answer ${idx + 1}`} style={{ width: '300px' }} onChange={e => {
                                     const newAnswers = editData.answers.map((a: string, i: number) => i === idx ? e.target.value : a);
                                     // If answer text changes, update correctAnswers too
                                     let correctAnswers = editData.correctAnswers;
@@ -183,6 +184,9 @@ export default function QuestionEditor() {
                                     }
                                     setEditData({ ...editData, answers: newAnswers, correctAnswers });
                                 }} disabled={editData.answers.length <= 2}>Remove</Button>
+                                {editData.correctAnswers[0] === answer && (
+                                    <span className="text-success ms-2 fw-bold">✓ Correct Answer</span>
+                                )}
                             </div>
                         ))}
                         <div className="d-flex justify-content-end">
@@ -256,8 +260,8 @@ export default function QuestionEditor() {
     return (
         <div id="wd-question-editor" className="p-3">
             <div className="d-flex justify-content-start mb-4">
-                <Button 
-                    variant="danger" 
+                <Button
+                    variant="danger"
                     size="lg"
                     onClick={handleAddQuestion}
                     className="d-flex align-items-center"
@@ -266,11 +270,58 @@ export default function QuestionEditor() {
                     New Question
                 </Button>
             </div>
-            {editingId ? (
-                renderEditForm()
-            ) : (
-                <QuestionPreview questions={questions} onEdit={handleEditQuestion} onDelete={handleDeleteQuestion} />
+
+            {/* Show all questions in edit form mode */}
+            {questions.map((question, index) => (
+                <div key={question._id} className="mb-4">
+                    {/* <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h5 className="mb-0">Question {index + 1}</h5>
+                        <div className="d-flex gap-2">
+                            <Button 
+                                variant="outline-primary" 
+                                size="sm"
+                                onClick={() => handleEditQuestion(question._id)}
+                            >
+                                Edit
+                            </Button>
+                            <Button 
+                                variant="outline-danger" 
+                                size="sm"
+                                onClick={() => handleDeleteQuestion(question._id)}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div> */}
+                    {editingId === question._id ? (
+                        renderEditForm()
+                    ) : (
+                        <QuestionPreview
+                            questions={[question]}
+                            onEdit={handleEditQuestion}
+                            onDelete={handleDeleteQuestion}
+                            isPreviewMode={false}
+                        />
+                    )}
+                </div>
+            ))}
+
+            {/* Show new question form if adding */}
+            {editingId === "new" && (
+                <div className="mb-4">
+                    <h5 className="mb-2">New Question</h5>
+                    {renderEditForm()}
+                </div>
             )}
+
+            {/* Empty state */}
+            {questions.length === 0 && editingId !== "new" && (
+                <div className="text-center p-5 border border-dashed rounded">
+                    <p className="text-muted mb-3">No questions yet.</p>
+                    <p className="text-muted">Click "New Question" to add your first question.</p>
+                </div>
+            )}
+
             <div ref={questionsEndRef} />
         </div>
     );

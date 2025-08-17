@@ -1,64 +1,121 @@
-import { Button, ListGroup } from "react-bootstrap";
+import { Button, ListGroup, Form } from "react-bootstrap";
 
-export default function QuestionPreview({ questions, onEdit, onDelete }: {
+export default function QuestionPreview({ questions, onEdit, onDelete, isPreviewMode = false }: {
     questions: any[];
     onEdit: (questionId: string) => void;
     onDelete: (questionId: string) => void;
+    isPreviewMode?: boolean;
 }) {
+    const renderQuestionContent = (question: any, index: number) => {
+        const questionTitle = question.title || "Untitled Question";
+        
+        return (
+            <div className="flex-grow-1">
+                <h6 className="fw-bold mb-2 text-primary">
+                    Question {index + 1}
+                </h6>
+                <div className="text-muted small mb-2">
+                    <span className="badge bg-secondary me-2">{question.questionType}</span>
+                    <span className="fw-bold">{question.points} pts</span>
+                </div>
+                
+                {/* Question Content */}
+                <div className="mb-3 p-3 bg-light rounded">
+                    <p className="mb-0">{questionTitle}</p>
+                </div>
+
+                {/* Render answers based on question type */}
+                {question.questionType === "MultipleChoice" && question.answers && (
+                    <div className="ms-3">
+                        <div className="fw-bold mb-2">Select the best answer:</div>
+                        {question.answers.map((answer: string, answerIndex: number) => (
+                            <div key={answerIndex} className="mb-2">
+                                <Form.Check 
+                                    type="radio" 
+                                    name={`question-${question._id}`}
+                                    label={`${String.fromCharCode(65 + answerIndex)}. ${answer}`}
+                                    disabled={isPreviewMode}
+                                    className={!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) ? "text-success fw-bold" : ""}
+                                />
+                                {!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) && 
+                                    <span className="text-success ms-2">✓ Correct Answer</span>
+                                }
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {question.questionType === "True/False" && (
+                    <div className="ms-3">
+                        <div className="fw-bold mb-2">Select True or False:</div>
+                        {["True", "False"].map((option) => (
+                            <div key={option} className="mb-2">
+                                <Form.Check 
+                                    type="radio" 
+                                    name={`question-${question._id}`}
+                                    label={option}
+                                    disabled={isPreviewMode}
+                                    className={!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(option) ? "text-success fw-bold" : ""}
+                                />
+                                {!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(option) && 
+                                    <span className="text-success ms-2">✓ Correct Answer</span>
+                                }
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {question.questionType === "FillInBlank" && (
+                    <div className="ms-3">
+                        <div className="fw-bold mb-2">Enter your answer:</div>
+                        <Form.Control 
+                            type="text" 
+                            placeholder="Type your answer here..."
+                            disabled={isPreviewMode}
+                            className="mb-2"
+                        />
+                        {!isPreviewMode && question.correctAnswers && question.correctAnswers.length > 0 && (
+                            <div className="text-success">
+                                <strong>Correct answers:</strong> {question.correctAnswers.join(", ")}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="questions-list">
             {questions.length === 0 ? (
                 <div className="text-center p-5 border border-dashed rounded">
                     <p className="text-muted mb-3">No questions yet.</p>
-                    <p className="text-muted">Click "New Question" to add your first question.</p>
+                    {!isPreviewMode && <p className="text-muted">Click "New Question" to add your first question.</p>}
                 </div>
             ) : (
                 <ListGroup>
                     {questions.map((question, index) => (
                         <ListGroup.Item key={question._id} className="mb-3 border rounded">
                             <div className="d-flex justify-content-between align-items-start">
-                                <div className="flex-grow-1">
-                                    <h6 className="fw-bold mb-2 text-primary">
-                                        Question {index + 1}: {question.title}
-                                    </h6>
-                                    <div className="text-muted small mb-2">
-                                        <span className="badge bg-secondary me-2">{question.questionType}</span>
-                                        <span className="fw-bold">{question.points} pts</span>
+                                {renderQuestionContent(question, index)}
+                                {!isPreviewMode && (
+                                    <div className="d-flex gap-2">
+                                        <Button 
+                                            variant="outline-primary" 
+                                            size="sm"
+                                            onClick={() => onEdit(question._id)}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button 
+                                            variant="outline-danger" 
+                                            size="sm"
+                                            onClick={() => onDelete(question._id)}
+                                        >
+                                            Delete
+                                        </Button>
                                     </div>
-                                    <div className="mb-2 p-2 bg-light rounded">
-                                        {question.question || <em className="text-muted">Question text not set</em>}
-                                    </div>
-                                    {question.answers && question.answers.length > 0 && (
-                                        <div className="ms-3">
-                                            <small className="text-muted fw-bold">Answers:</small>
-                                            <ul className="small mt-1 list-unstyled">
-                                                {question.answers.map((answer: any, answerIndex: number) => (
-                                                    <li key={answerIndex} className={`mb-1 p-1 ${answer.correct ? "text-success fw-bold bg-light-success" : "text-muted"}`}>
-                                                        <span className="me-2">{String.fromCharCode(65 + answerIndex)}.</span>
-                                                        {answer.text || <em className="text-muted">Answer text not set</em>}
-                                                        {answer.correct && <span className="text-success ms-2">✓ Correct</span>}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="d-flex gap-2">
-                                    <Button 
-                                        variant="outline-primary" 
-                                        size="sm"
-                                        onClick={() => onEdit(question._id)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button 
-                                        variant="outline-danger" 
-                                        size="sm"
-                                        onClick={() => onDelete(question._id)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
+                                )}
                             </div>
                         </ListGroup.Item>
                     ))}
