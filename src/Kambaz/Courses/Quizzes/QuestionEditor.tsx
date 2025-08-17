@@ -45,6 +45,7 @@ export default function QuestionEditor() {
         if (!qid) return;
         const newQuestion = {
             title: "",
+            questionDescription: "",
             questionType: "MultipleChoice",
             points: 1,
             answers: ["", ""],
@@ -158,6 +159,15 @@ export default function QuestionEditor() {
                 <div className="mb-2 text-muted">Enter your question and answers, then select the correct answer(s)</div>
                 <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Question Title:</div>
                 <Form.Control className="mb-3" type="text" placeholder="Enter question title" value={editData.title ?? ""} onChange={e => setEditData({ ...editData, title: e.target.value })} />
+                <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Question Description:</div>
+                <Form.Control 
+                    as="textarea" 
+                    rows={3} 
+                    className="mb-3" 
+                    placeholder="Enter the question description/prompt that students will see" 
+                    value={editData.questionDescription ?? ""} 
+                    onChange={e => setEditData({ ...editData, questionDescription: e.target.value })} 
+                />
                 {/* Answers UI by type */}
                 {questionType === "MultipleChoice" && (
                     <>
@@ -272,7 +282,7 @@ export default function QuestionEditor() {
             </div>
 
             {/* Show all questions in edit form mode */}
-            {questions.map((question, index) => (
+            {questions.map((question) => (
                 <div key={question._id} className="mb-4">
                     {/* <div className="d-flex justify-content-between align-items-center mb-2">
                         <h5 className="mb-0">Question {index + 1}</h5>

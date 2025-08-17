@@ -8,11 +8,12 @@ export default function QuestionPreview({ questions, onEdit, onDelete, isPreview
 }) {
     const renderQuestionContent = (question: any, index: number) => {
         const questionTitle = question.title || "Untitled Question";
+        const questionDescription = question.questionDescription || "";
         
         return (
             <div className="flex-grow-1">
                 <h6 className="fw-bold mb-2 text-primary">
-                    Question {index + 1}
+                    Question {index + 1}: {questionTitle}
                 </h6>
                 <div className="text-muted small mb-2">
                     <span className="badge bg-secondary me-2">{question.questionType}</span>
@@ -21,7 +22,11 @@ export default function QuestionPreview({ questions, onEdit, onDelete, isPreview
                 
                 {/* Question Content */}
                 <div className="mb-3 p-3 bg-light rounded">
-                    <p className="mb-0">{questionTitle}</p>
+                    {questionDescription ? (
+                        <p className="mb-0">{questionDescription}</p>
+                    ) : (
+                        <em className="text-muted">No question description provided</em>
+                    )}
                 </div>
 
                 {/* Render answers based on question type */}
