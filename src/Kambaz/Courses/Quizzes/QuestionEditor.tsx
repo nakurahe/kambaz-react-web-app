@@ -174,9 +174,15 @@ export default function QuestionEditor() {
                         <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Answers:</div>
                         {editData.answers.map((answer: string, idx: number) => (
                             <div key={idx} className="d-flex align-items-center mb-2">
-                                <Form.Check type="radio" name="correctAnswer" checked={editData.correctAnswers[0] === answer} onChange={() => {
-                                    setEditData({ ...editData, correctAnswers: [answer] });
-                                }} className="me-2" />
+                                <Form.Check 
+                                    type="radio" 
+                                    name={`correctAnswer-${editingId || 'new'}`} 
+                                    checked={editData.correctAnswers[0] === answer} 
+                                    onChange={() => {
+                                        setEditData({ ...editData, correctAnswers: [answer] });
+                                    }} 
+                                    className="me-2" 
+                                />
                                 <Form.Control type="text" value={answer ?? ""} placeholder={`Answer ${idx + 1}`} style={{ width: '300px' }} onChange={e => {
                                     const newAnswers = editData.answers.map((a: string, i: number) => i === idx ? e.target.value : a);
                                     // If answer text changes, update correctAnswers too
@@ -190,7 +196,7 @@ export default function QuestionEditor() {
                                     const newAnswers = editData.answers.filter((_: string, i: number) => i !== idx);
                                     let correctAnswers = editData.correctAnswers;
                                     if (editData.correctAnswers[0] === answer) {
-                                        correctAnswers = [""];
+                                        correctAnswers = [];
                                     }
                                     setEditData({ ...editData, answers: newAnswers, correctAnswers });
                                 }} disabled={editData.answers.length <= 2}>Remove</Button>
@@ -211,17 +217,21 @@ export default function QuestionEditor() {
                 )}
                 {questionType === "True/False" && (
                     <>
-                        <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Correct Answer:</div>
+                        <div className="fw-bold mb-1" style={{ fontSize: '1.2rem' }}>Answers:</div>
                         <div className="d-flex gap-3 mb-2">
                             {["True", "False"].map((val) => (
-                                <Form.Check
-                                    key={val}
-                                    type="radio"
-                                    label={val}
-                                    name="correctAnswer"
-                                    checked={editData.correctAnswers[0] === val}
-                                    onChange={() => setEditData({ ...editData, correctAnswers: [val] })}
-                                />
+                                <div key={val} className="d-flex align-items-center" style={{ flex: "1 1 0" }}>
+                                    <Form.Check
+                                        type="radio"
+                                        label={val}
+                                        name={`correctAnswer-${editingId || 'new'}`}
+                                        checked={editData.correctAnswers[0] === val}
+                                        onChange={() => setEditData({ ...editData, correctAnswers: [val] })}
+                                    />
+                                    {editData.correctAnswers[0] === val && (
+                                        <span className="text-success ms-2 fw-bold">✓ Correct Answer</span>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </>
