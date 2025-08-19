@@ -1,11 +1,21 @@
 import { Button, ListGroup, Form } from "react-bootstrap";
 
-export default function QuestionPreview({ questions, onEdit, onDelete, isPreviewMode = false, globalQuestions }: {
+export default function QuestionPreview({ 
+    questions, 
+    onEdit, 
+    onDelete, 
+    isPreviewMode = false, 
+    globalQuestions,
+    userAnswers = {},
+    onAnswerChange
+}: {
     questions: any[];
     onEdit: (questionId: string) => void;
     onDelete: (questionId: string) => void;
     isPreviewMode?: boolean;
     globalQuestions?: any[];
+    userAnswers?: {[questionId: string]: any[]};
+    onAnswerChange?: (questionId: string, answers: any[]) => void;
 }) {
     const renderQuestionContent = (question: any, index: number) => {
         const questionTitle = question.title || "Untitled Question";
@@ -39,40 +49,56 @@ export default function QuestionPreview({ questions, onEdit, onDelete, isPreview
                 {question.questionType === "MultipleChoice" && question.answers && (
                     <div className="ms-3">
                         <div className="fw-bold mb-2">Select the best answer:</div>
-                        {question.answers.map((answer: string, answerIndex: number) => (
-                            <div key={answerIndex} className="mb-2">
-                                <Form.Check 
-                                    type="radio" 
-                                    name={`question-${question._id}`}
-                                    label={`${String.fromCharCode(65 + answerIndex)}. ${answer}`}
-                                    disabled={isPreviewMode}
-                                    className={!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) ? "text-success fw-bold" : ""}
-                                />
-                                {!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) && 
-                                    <span className="text-success ms-2">✓ Correct Answer</span>
-                                }
-                            </div>
-                        ))}
+                        {question.answers.map((answer: string, answerIndex: number) => {
+                            const isSelected = userAnswers[question._id]?.includes(answer);
+                            return (
+                                <div key={answerIndex} className="mb-2">
+                                    <Form.Check 
+                                        type="radio" 
+                                        name={`question-${question._id}`}
+                                        label={`${String.fromCharCode(65 + answerIndex)}. ${answer}`}
+                                        disabled={isPreviewMode}
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                            if (e.target.checked && onAnswerChange) {
+                                                onAnswerChange(question._id, [answer]);
+                                            }
+                                        }}
+                                    />
+                                    {isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) && 
+                                        <span className="text-success ms-2">✓ Correct Answer</span>
+                                    }
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
                 {question.questionType === "True/False" && (
                     <div className="ms-3">
                         <div className="fw-bold mb-2">Select True or False:</div>
-                        {["True", "False"].map((option) => (
-                            <div key={option} className="mb-2">
-                                <Form.Check 
-                                    type="radio" 
-                                    name={`question-${question._id}`}
-                                    label={option}
-                                    disabled={isPreviewMode}
-                                    className={!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(option) ? "text-success fw-bold" : ""}
-                                />
-                                {!isPreviewMode && question.correctAnswers && question.correctAnswers.includes(option) && 
-                                    <span className="text-success ms-2">✓ Correct Answer</span>
-                                }
-                            </div>
-                        ))}
+                        {["True", "False"].map((option) => {
+                            const isSelected = userAnswers[question._id]?.includes(option);
+                            return (
+                                <div key={option} className="mb-2">
+                                    <Form.Check 
+                                        type="radio" 
+                                        name={`question-${question._id}`}
+                                        label={option}
+                                        disabled={isPreviewMode}
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                            if (e.target.checked && onAnswerChange) {
+                                                onAnswerChange(question._id, [option]);
+                                            }
+                                        }}
+                                    />
+                                    {isPreviewMode && question.correctAnswers && question.correctAnswers.includes(option) && 
+                                        <span className="text-success ms-2">✓ Correct Answer</span>
+                                    }
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
@@ -83,9 +109,15 @@ export default function QuestionPreview({ questions, onEdit, onDelete, isPreview
                             type="text" 
                             placeholder="Type your answer here..."
                             disabled={isPreviewMode}
+                            value={userAnswers[question._id]?.[0] || ""}
+                            onChange={(e) => {
+                                if (onAnswerChange) {
+                                    onAnswerChange(question._id, [e.target.value]);
+                                }
+                            }}
                             className="mb-2"
                         />
-                        {!isPreviewMode && question.correctAnswers && question.correctAnswers.length > 0 && (
+                        {isPreviewMode && question.correctAnswers && question.correctAnswers.length > 0 && (
                             <div className="text-success">
                                 <strong>Correct answers:</strong> {question.correctAnswers.join(", ")}
                             </div>
