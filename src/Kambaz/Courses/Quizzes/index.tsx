@@ -6,9 +6,11 @@ import { ListGroup, Dropdown } from "react-bootstrap";
 import { TbCircleDashedCheck } from "react-icons/tb";
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { deleteQuiz, setQuizzes, updateQuiz } from "./reducer";
 import * as quizzesClient from "./client";
+import * as questionsClient from "./questionsClient";
+import * as quizAttemptsClient from "./quizAttemptsClient";
 
 export default function Quizzes() {
     const { cid } = useParams();
@@ -16,6 +18,9 @@ export default function Quizzes() {
     const dispatch = useDispatch();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [questionCounts, setQuestionCounts] = useState<{[quizId: string]: number}>({});
+    const [quizScores, setQuizScores] = useState<{[quizId: string]: string}>({});
+    
     const courseQuizzes = quizzes
         .filter((quiz: any) => quiz.course === cid)
         .sort((a: any, b: any) => {
@@ -28,14 +33,50 @@ export default function Quizzes() {
         try {
             const quizzes = await quizzesClient.findQuizzesForCourse(cid as string);
             dispatch(setQuizzes(quizzes));
+            
+            // Fetch question counts for all quizzes
+            const counts: {[quizId: string]: number} = {};
+            for (const quiz of quizzes) {
+                try {
+                    const questions = await questionsClient.findQuestionsForQuiz(quiz._id);
+                    counts[quiz._id] = questions.length;
+                } catch (error) {
+                    console.error(`Failed to fetch questions for quiz ${quiz._id}:`, error);
+                    counts[quiz._id] = 0;
+                }
+            }
+            setQuestionCounts(counts);
+            
+            // Fetch quiz scores for students
+            if (currentUser?.role === "STUDENT") {
+                const scores: {[quizId: string]: string} = {};
+                for (const quiz of quizzes) {
+                    try {
+                        const attempts = await quizAttemptsClient.findAttemptsByUserAndQuiz(currentUser._id, quiz._id);
+                        if (attempts.length > 0) {
+                            // Get the latest attempt (they are sorted by submittedAt desc)
+                            const latestAttempt = attempts[0];
+                            scores[quiz._id] = `${latestAttempt.totalPoints} / ${latestAttempt.maxPoints}`;
+                        } else {
+                            scores[quiz._id] = `-- / ${quiz.points}`;
+                        }
+                    } catch (error) {
+                        console.error(`Failed to fetch attempts for quiz ${quiz._id}:`, error);
+                        scores[quiz._id] = `-- / ${quiz.points}`;
+                    }
+                }
+                setQuizScores(scores);
+            }
         } catch (error) {
             console.error("Failed to fetch quizzes:", error);
         }
     };
     
     useEffect(() => {
-        fetchQuizzes();
-    }, [cid]);
+        if (cid && currentUser) {
+            fetchQuizzes();
+        }
+    }, [cid, currentUser]);
 
     const handleDeleteQuiz = async (quizId: string) => {
         const confirmDelete = window.confirm("Are you sure you want to remove this quiz?");
@@ -80,16 +121,8 @@ export default function Quizzes() {
     };
 
     const getQuizScore = (quiz: any) => {
-        // This would typically come from quiz attempts/submissions data
-        // You would fetch this from your backend: /api/quizzes/{quizId}/attempts?userId={currentUser._id}
-        if (currentUser.role === "STUDENT") {
-            // Simulate different scores based on quiz ID for demo
-            const mockScores: { [key: string]: string } = {
-                "Q101": "85 / 100",
-                "Q102": "-- / 150", // No attempt yet
-                "Q103": "72 / 75"
-            };
-            return mockScores[quiz._id] || "-- / " + quiz.points;
+        if (currentUser?.role === "STUDENT") {
+            return quizScores[quiz._id] || `-- / ${quiz.points}`;
         }
         return null;
     };
@@ -186,7 +219,7 @@ export default function Quizzes() {
                                     </div>
                                 </div>
                                 <div className="wd-quiz-list-item-description text-muted small ms-4">
-                                    <b>{getAvailabilityStatus(quiz)}</b> | <b>Due</b> {new Date(quiz.dueDate).toLocaleDateString()} | <b>{quiz.points} pts</b> | <b>{quiz.questions?.length || 0} questions</b>
+                                    <b>{getAvailabilityStatus(quiz)}</b> | <b>Due</b> {new Date(quiz.dueDate).toLocaleDateString()} | <b>{quiz.points} pts</b> | <b>{questionCounts[quiz._id] || 0} questions</b>
                                     {currentUser.role === "STUDENT" && getQuizScore(quiz) && (
                                         <span> | <b>Score:</b> {getQuizScore(quiz)}</span>
                                     )}
