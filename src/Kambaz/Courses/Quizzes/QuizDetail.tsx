@@ -103,6 +103,10 @@ export default function QuizDetail() {
         }
     };
 
+    const handleViewResults = () => {
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/result`);
+    };
+
     const formatDate = (dateString: string) => {
         if (!dateString) return "Not specified";
         const date = new Date(dateString);
@@ -127,15 +131,42 @@ export default function QuizDetail() {
                         </Button>
                     </>
                 ) : (
-                    <Button 
-                        variant={attemptInfo && attemptInfo.attemptCount >= attemptInfo.maxAttempts ? "secondary" : "danger"} 
-                        onClick={handleStartQuiz}
-                    >
-                        {attemptInfo && attemptInfo.attemptCount >= attemptInfo.maxAttempts 
-                            ? "View Results" 
-                            : "Start Quiz"
-                        }
-                    </Button>
+                    <>
+                        {/* Start Quiz Button - Always show if attempts remain */}
+                        {attemptInfo && attemptInfo.attemptCount < attemptInfo.maxAttempts ? (
+                            <Button 
+                                variant="danger" 
+                                onClick={handleStartQuiz}
+                            >
+                                Start Quiz
+                                {attemptInfo && ` (${attemptInfo.attemptCount}/${attemptInfo.maxAttempts} attempts used)`}
+                            </Button>
+                        ) : attemptInfo && attemptInfo.attemptCount >= attemptInfo.maxAttempts ? (
+                            <Button 
+                                variant="secondary" 
+                                onClick={handleViewResults}
+                            >
+                                View Results
+                            </Button>
+                        ) : (
+                            <Button 
+                                variant="danger" 
+                                onClick={handleStartQuiz}
+                            >
+                                Start Quiz
+                            </Button>
+                        )}
+                        
+                        {/* View Results Button - Show if student has made at least one attempt */}
+                        {attemptInfo && attemptInfo.attemptCount > 0 && attemptInfo.attemptCount < attemptInfo.maxAttempts && (
+                            <Button 
+                                variant="outline-secondary" 
+                                onClick={handleViewResults}
+                            >
+                                View Previous Results
+                            </Button>
+                        )}
+                    </>
                 )}
             </div>
 

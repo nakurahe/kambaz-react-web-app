@@ -1,20 +1,24 @@
 import { useParams, useNavigate } from "react-router";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Button, Dropdown, Form } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 import * as questionsClient from "./questionsClient";
+import * as quizzesClient from "./client";
+import { updateQuiz } from "./reducer";
 import QuestionPreview from "./QuestionPreview";
 
 export default function QuestionEditor() {
-    const { qid, cid } = useParams();
+    const { qid } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editData, setEditData] = useState<any | null>(null);
     const [isNew, setIsNew] = useState(false);
+    const [loading, setLoading] = useState(false);
     const questionsEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -80,32 +84,6 @@ export default function QuestionEditor() {
         setEditData(null);
         setIsNew(false);
     };
-
-    // // Cancel all changes and delete all saved questions
-    // const handleCancelAll = async () => {
-    //     const confirmCancel = window.confirm("Are you sure you want to delete all questions? This action cannot be undone.");
-    //     if (confirmCancel) {
-    //         try {
-    //             // Delete all questions for this quiz
-    //             for (const question of questions) {
-    //                 await questionsClient.deleteQuestion(question._id);
-    //             }
-    //             setQuestions([]);
-    //             setEditingId(null);
-    //             setEditData(null);
-    //             setIsNew(false);
-    //             navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Editor`);
-    //         } catch (error) {
-    //             console.error("Failed to delete questions:", error);
-    //             alert("Failed to delete questions. Please try again.");
-    //         }
-    //     }
-    // };
-
-    // // Save and redirect to quiz editor
-    // const handleSaveAndRedirect = () => {
-    //     navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`);
-    // };
 
     // Save or update question
     const handleSaveOrUpdate = async () => {
@@ -305,6 +283,51 @@ export default function QuestionEditor() {
         );
     }
 
+    // Save handlers
+    const handleCancel = () => {
+        navigate(`/Kambaz/Courses/${quiz?.course}/Quizzes/${qid}`);
+    };
+
+    const handleSaveOnly = async () => {
+        try {
+            setLoading(true);
+            // Just navigate back without changing published status
+            navigate(`/Kambaz/Courses/${quiz?.course}/Quizzes/${qid}`);
+        } catch (error) {
+            console.error("Navigation error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveAndPublish = async () => {
+        if (!quiz) {
+            alert("Quiz not found");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            
+            // Update the quiz to set published to true
+            const updatedQuizData = {
+                ...quiz,
+                published: true
+            };
+
+            const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
+            dispatch(updateQuiz(updatedQuiz));
+            
+            // Navigate back to quiz list
+            navigate(`/Kambaz/Courses/${quiz.course}/Quizzes`);
+        } catch (error) {
+            console.error("Failed to publish quiz:", error);
+            alert("Failed to publish quiz. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div id="wd-question-editor" className="p-3">
             <div className="d-flex justify-content-center mb-4">
@@ -356,16 +379,25 @@ export default function QuestionEditor() {
             <hr />
             <div className="text-end">
                 <button 
-                    onClick={() => navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}`)} 
+                    onClick={handleCancel} 
                     className="btn btn-secondary me-2"
+                    disabled={loading}
                 >
                     Cancel
                 </button>
                 <button 
-                    onClick={() => navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}`)} 
-                    className="btn btn-warning"
+                    onClick={handleSaveOnly} 
+                    className="btn btn-warning me-2"
+                    disabled={loading}
                 >
-                    Save
+                    {loading ? "Saving..." : "Save"}
+                </button>
+                <button 
+                    onClick={handleSaveAndPublish} 
+                    className="btn btn-danger"
+                    disabled={loading}
+                >
+                    {loading ? "Publishing..." : "Save & Publish"}
                 </button>
             </div>
 
