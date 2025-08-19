@@ -23,6 +23,13 @@ export default function Quizzes() {
     
     const courseQuizzes = quizzes
         .filter((quiz: any) => quiz.course === cid)
+        .filter((quiz: any) => {
+            // Faculty can see all quizzes, non-faculty can only see published quizzes
+            if (currentUser?.role === "FACULTY") {
+                return true;
+            }
+            return quiz.published;
+        })
         .sort((a: any, b: any) => {
             const dateA = new Date(a.availableFrom || 0).getTime();
             const dateB = new Date(b.availableFrom || 0).getTime();
@@ -177,20 +184,25 @@ export default function Quizzes() {
                                         </button>
                                     </div>
                                     <div className="d-flex align-items-center">
-                                        {quiz.published ? (
-                                            <FaCheckCircle 
-                                                className="text-success me-2" 
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => handleTogglePublish(quiz)}
-                                                title="Click to unpublish"
-                                            />
-                                        ) : (
-                                            <TbCircleDashedCheck 
-                                                className="text-secondary me-2" 
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => handleTogglePublish(quiz)}
-                                                title="Click to publish"
-                                            />
+                                        {/* Show publish status icons only for Faculty */}
+                                        {currentUser?.role === "FACULTY" && (
+                                            <>
+                                                {quiz.published ? (
+                                                    <FaCheckCircle 
+                                                        className="text-success me-2" 
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => handleTogglePublish(quiz)}
+                                                        title="Click to unpublish"
+                                                    />
+                                                ) : (
+                                                    <TbCircleDashedCheck 
+                                                        className="text-secondary me-2" 
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => handleTogglePublish(quiz)}
+                                                        title="Click to publish"
+                                                    />
+                                                )}
+                                            </>
                                         )}
                                         {currentUser.role === "FACULTY" && (
                                             <Dropdown>
