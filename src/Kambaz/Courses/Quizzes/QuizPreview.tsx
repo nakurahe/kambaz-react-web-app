@@ -119,6 +119,19 @@ export default function QuizPreview() {
                 </Card.Body>
             </Card>
 
+            {/* Edit Quiz Button for Faculty */}
+            {currentUser?.role === "FACULTY" && (
+                <div className="mb-3 text-end">
+                    <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={() => navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}/Editor`)}
+                    >
+                        Edit this quiz
+                    </Button>
+                </div>
+            )}
+
             {questions.length === 0 ? (
                 <div className="text-center p-5 border border-dashed rounded">
                     <p className="text-muted mb-3">No questions available for this quiz.</p>
@@ -160,6 +173,7 @@ export default function QuizPreview() {
                             onEdit={() => {}} 
                             onDelete={() => {}} 
                             isPreviewMode={false}
+                            showEditButtons={false}
                             globalQuestions={questions}
                             userAnswers={userAnswers}
                             onAnswerChange={handleAnswerChange}

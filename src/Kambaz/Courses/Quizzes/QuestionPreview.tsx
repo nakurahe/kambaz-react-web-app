@@ -5,6 +5,7 @@ export default function QuestionPreview({
     onEdit, 
     onDelete, 
     isPreviewMode = false, 
+    showEditButtons = true,
     globalQuestions,
     userAnswers = {},
     onAnswerChange
@@ -13,6 +14,7 @@ export default function QuestionPreview({
     onEdit: (questionId: string) => void;
     onDelete: (questionId: string) => void;
     isPreviewMode?: boolean;
+    showEditButtons?: boolean;
     globalQuestions?: any[];
     userAnswers?: {[questionId: string]: any[]};
     onAnswerChange?: (questionId: string, answers: any[]) => void;
@@ -57,7 +59,7 @@ export default function QuestionPreview({
                                         type="radio" 
                                         name={`question-${question._id}`}
                                         label={`${String.fromCharCode(65 + answerIndex)}. ${answer}`}
-                                        disabled={isPreviewMode}
+                                        disabled={isPreviewMode && !onAnswerChange}
                                         checked={isSelected}
                                         onChange={(e) => {
                                             if (e.target.checked && onAnswerChange) {
@@ -85,7 +87,7 @@ export default function QuestionPreview({
                                         type="radio" 
                                         name={`question-${question._id}`}
                                         label={option}
-                                        disabled={isPreviewMode}
+                                        disabled={isPreviewMode && !onAnswerChange}
                                         checked={isSelected}
                                         onChange={(e) => {
                                             if (e.target.checked && onAnswerChange) {
@@ -108,7 +110,7 @@ export default function QuestionPreview({
                         <Form.Control 
                             type="text" 
                             placeholder="Type your answer here..."
-                            disabled={isPreviewMode}
+                            disabled={isPreviewMode && !onAnswerChange}
                             value={userAnswers[question._id]?.[0] || ""}
                             onChange={(e) => {
                                 if (onAnswerChange) {
@@ -141,7 +143,7 @@ export default function QuestionPreview({
                         <ListGroup.Item key={question._id} className="mb-3 border rounded">
                             <div className="d-flex justify-content-between align-items-start">
                                 {renderQuestionContent(question, index)}
-                                {!isPreviewMode && (
+                                {showEditButtons && (
                                     <div className="d-flex gap-2">
                                         <Button 
                                             variant="outline-primary" 
