@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { Card, Button } from "react-bootstrap";
@@ -8,6 +8,7 @@ import QuestionPreview from "./QuestionPreview";
 
 export default function QuizPreview() {
     const { qid } = useParams();
+    const navigate = useNavigate();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const quiz = quizzes.find((q: any) => q._id === qid);
@@ -79,9 +80,8 @@ export default function QuizPreview() {
             await quizAttemptsClient.submitQuizAttempt(submissionData);
             alert(`Quiz "${quiz.title}" submitted successfully!`);
             
-            // Reset answers after successful submission
-            setUserAnswers({});
-            setCurrentQuestionIndex(0);
+            // Navigate to quiz results page
+            navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}/result`);
         } catch (error) {
             console.error("Error submitting quiz:", error);
             alert("Failed to submit quiz. Please try again.");
