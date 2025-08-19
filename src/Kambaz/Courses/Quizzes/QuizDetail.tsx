@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Table } from "react-bootstrap";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { updateQuiz } from "./reducer";
 import * as quizzesClient from "./client";
+import * as quizAttemptsClient from "./quizAttemptsClient";
 
 export default function QuizDetail() {
     const { cid, qid } = useParams();
@@ -11,6 +12,7 @@ export default function QuizDetail() {
     const dispatch = useDispatch();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [attemptInfo, setAttemptInfo] = useState<{attemptCount: number, maxAttempts: number} | null>(null);
     
     const quiz = quizzes.find((q: any) => q._id === qid);
 
@@ -29,6 +31,26 @@ export default function QuizDetail() {
         };
         fetchQuiz();
     }, [qid, dispatch]);
+
+    // Fetch attempt info for students
+    useEffect(() => {
+        const fetchAttemptInfo = async () => {
+            if (currentUser?.role === "STUDENT" && qid && quiz) {
+                try {
+                    const existingAttempts = await quizAttemptsClient.findAttemptsByUserAndQuiz(currentUser._id, qid);
+                    const attemptCount = existingAttempts.length;
+                    const maxAttempts = quiz.howManyAttempts || 1;
+                    setAttemptInfo({ attemptCount, maxAttempts });
+                } catch (error) {
+                    console.error("Error fetching attempt info:", error);
+                }
+            }
+        };
+        
+        if (quiz) {
+            fetchAttemptInfo();
+        }
+    }, [currentUser, qid, quiz]);
     
     if (!quiz && quizzes.length > 0) {
         return (
@@ -54,9 +76,31 @@ export default function QuizDetail() {
         navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Preview`);
     };
 
-    const handleStartQuiz = () => {
-        // This would typically navigate to a quiz taking interface
-        console.log("Start quiz - to be implemented");
+    const handleStartQuiz = async () => {
+        if (!currentUser || !qid) {
+            alert("You must be logged in to take a quiz.");
+            return;
+        }
+
+        try {
+            // Check user's existing attempts for this quiz
+            const existingAttempts = await quizAttemptsClient.findAttemptsByUserAndQuiz(currentUser._id, qid);
+            const attemptCount = existingAttempts.length;
+            const maxAttempts = quiz.howManyAttempts || 1;
+
+            if (attemptCount >= maxAttempts) {
+                // User has exhausted attempts, redirect to result page
+                // alert(`You have used all ${maxAttempts} attempt(s) for this quiz. Redirecting to your results.`);
+                navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/result`);
+                return;
+            }
+
+            // User can take the quiz, navigate to preview (quiz taking interface)
+            navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Preview`);
+        } catch (error) {
+            console.error("Error checking quiz attempts:", error);
+            alert("Failed to check quiz attempts. Please try again.");
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -83,8 +127,14 @@ export default function QuizDetail() {
                         </Button>
                     </>
                 ) : (
-                    <Button variant="danger" onClick={handleStartQuiz}>
-                        Start Quiz
+                    <Button 
+                        variant={attemptInfo && attemptInfo.attemptCount >= attemptInfo.maxAttempts ? "secondary" : "danger"} 
+                        onClick={handleStartQuiz}
+                    >
+                        {attemptInfo && attemptInfo.attemptCount >= attemptInfo.maxAttempts 
+                            ? "View Results" 
+                            : "Start Quiz"
+                        }
                     </Button>
                 )}
             </div>

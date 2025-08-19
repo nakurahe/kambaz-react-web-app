@@ -81,31 +81,31 @@ export default function QuestionEditor() {
         setIsNew(false);
     };
 
-    // Cancel all changes and delete all saved questions
-    const handleCancelAll = async () => {
-        const confirmCancel = window.confirm("Are you sure you want to delete all questions? This action cannot be undone.");
-        if (confirmCancel) {
-            try {
-                // Delete all questions for this quiz
-                for (const question of questions) {
-                    await questionsClient.deleteQuestion(question._id);
-                }
-                setQuestions([]);
-                setEditingId(null);
-                setEditData(null);
-                setIsNew(false);
-                navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Editor`);
-            } catch (error) {
-                console.error("Failed to delete questions:", error);
-                alert("Failed to delete questions. Please try again.");
-            }
-        }
-    };
+    // // Cancel all changes and delete all saved questions
+    // const handleCancelAll = async () => {
+    //     const confirmCancel = window.confirm("Are you sure you want to delete all questions? This action cannot be undone.");
+    //     if (confirmCancel) {
+    //         try {
+    //             // Delete all questions for this quiz
+    //             for (const question of questions) {
+    //                 await questionsClient.deleteQuestion(question._id);
+    //             }
+    //             setQuestions([]);
+    //             setEditingId(null);
+    //             setEditData(null);
+    //             setIsNew(false);
+    //             navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/Editor`);
+    //         } catch (error) {
+    //             console.error("Failed to delete questions:", error);
+    //             alert("Failed to delete questions. Please try again.");
+    //         }
+    //     }
+    // };
 
-    // Save and redirect to quiz editor
-    const handleSaveAndRedirect = () => {
-        navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`);
-    };
+    // // Save and redirect to quiz editor
+    // const handleSaveAndRedirect = () => {
+    //     navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`);
+    // };
 
     // Save or update question
     const handleSaveOrUpdate = async () => {
@@ -356,13 +356,13 @@ export default function QuestionEditor() {
             <hr />
             <div className="text-end">
                 <button 
-                    onClick={handleCancelAll} 
+                    onClick={() => navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}`)} 
                     className="btn btn-secondary me-2"
                 >
                     Cancel
                 </button>
                 <button 
-                    onClick={handleSaveAndRedirect} 
+                    onClick={() => navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}`)} 
                     className="btn btn-warning"
                 >
                     Save

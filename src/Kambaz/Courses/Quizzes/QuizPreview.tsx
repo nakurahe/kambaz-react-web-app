@@ -15,6 +15,7 @@ export default function QuizPreview() {
     const [questions, setQuestions] = useState<any[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState<{[questionId: string]: any[]}>({});
+    const [isCheckingAttempts, setIsCheckingAttempts] = useState(true);
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -30,6 +31,32 @@ export default function QuizPreview() {
         };
         fetchQuestions();
     }, [qid]);
+
+    // Check attempts for students
+    useEffect(() => {
+        const checkAttempts = async () => {
+            if (currentUser?.role === "STUDENT" && qid && quiz) {
+                try {
+                    const existingAttempts = await quizAttemptsClient.findAttemptsByUserAndQuiz(currentUser._id, qid);
+                    const attemptCount = existingAttempts.length;
+                    const maxAttempts = quiz.howManyAttempts || 1;
+
+                    if (attemptCount >= maxAttempts) {
+                        // Redirect to results page
+                        navigate(`/Kambaz/Courses/${quiz.course}/Quizzes/${qid}/result`);
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error checking quiz attempts:", error);
+                }
+            }
+            setIsCheckingAttempts(false);
+        };
+
+        if (quiz) {
+            checkAttempts();
+        }
+    }, [currentUser, qid, quiz, navigate]);
 
     const handlePreviousQuestion = () => {
         setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
@@ -90,7 +117,7 @@ export default function QuizPreview() {
 
     const currentQuestion = questions[currentQuestionIndex];
 
-    if (!quiz) {
+    if (!quiz || (currentUser?.role === "STUDENT" && isCheckingAttempts)) {
         return (
             <div className="text-center p-4">
                 Loading quiz...
@@ -110,14 +137,17 @@ export default function QuizPreview() {
                 </div>
             </div>
 
-            <Card className="mb-3">
-                <Card.Header>
-                    <h5 className="mb-0">Quiz Instructions</h5>
-                </Card.Header>
-                <Card.Body>
-                    <p>This is a preview of the quiz. Questions are displayed as they would appear to students.</p>
-                </Card.Body>
-            </Card>
+            {/* Quiz Instructions Card - Only show for Faculty */}
+            {currentUser?.role === "FACULTY" && (
+                <Card className="mb-3">
+                    <Card.Header>
+                        <h5 className="mb-0">Quiz Instructions</h5>
+                    </Card.Header>
+                    <Card.Body>
+                        <p>This is a preview of the quiz. Questions are displayed as they would appear to students.</p>
+                    </Card.Body>
+                </Card>
+            )}
 
             {/* Edit Quiz Button for Faculty */}
             {currentUser?.role === "FACULTY" && (
