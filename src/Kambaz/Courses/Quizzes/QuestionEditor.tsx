@@ -275,14 +275,6 @@ export default function QuestionEditor() {
         );
     };
 
-    if (!quiz) {
-        return (
-            <div className="text-center p-4">
-                Loading quiz...
-            </div>
-        );
-    }
-
     // Save handlers
     const handleCancel = () => {
         navigate(`/Kambaz/Courses/${quiz?.course}/Quizzes/${qid}`);

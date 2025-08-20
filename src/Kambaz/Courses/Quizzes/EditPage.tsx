@@ -141,16 +141,19 @@ export default function QuizEditor() {
                 published: shouldPublish ? true : quiz.published
             };
 
+            let savedQuizId = qid;
+            
             if (isEditing) {
                 const updatedQuiz = await quizzesClient.updateQuiz(quizData);
                 dispatch(updateQuiz(updatedQuiz));
             } else {
                 const newQuiz = await quizzesClient.createQuizForCourse(cid as string, quizData);
                 dispatch(addQuiz(newQuiz));
+                savedQuizId = newQuiz._id; // Use the new quiz's ID for navigation
             }
 
             if (!shouldNavigate) {
-                navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`);
+                navigate(`/Kambaz/Courses/${cid}/Quizzes/${savedQuizId}`);
             } else {
                 navigate(`/Kambaz/Courses/${cid}/Quizzes`);
             }
