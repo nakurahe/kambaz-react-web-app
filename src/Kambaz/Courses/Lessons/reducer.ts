@@ -11,6 +11,10 @@ export interface Lesson {
     quizId?: string;
     quizGenerationStatus: "none" | "pending" | "processing" | "completed" | "error";
     quizGenerationError?: string;
+    progress?: number;
+    progressMessage?: string;
+    numQuestions?: number;
+    difficulty?: string;
     createdAt?: string;
     updatedAt?: string;
 }

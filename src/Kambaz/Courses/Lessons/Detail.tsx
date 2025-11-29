@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { useDispatch } from "react-redux";
 import { Card, Button, Alert, Spinner, Badge, ProgressBar } from "react-bootstrap";
-import { FaArrowLeft, FaQuestionCircle, FaEdit, FaTrash, FaSync } from "react-icons/fa";
+import { FaArrowLeft, FaQuestionCircle, FaEdit, FaTrash, FaSync, FaClock, FaCheckCircle, FaExclamationCircle, FaSpinner } from "react-icons/fa";
 import { setCurrentLesson, deleteLesson as deleteLessonAction } from "./reducer";
 import * as lessonsClient from "./client";
 
@@ -107,15 +107,24 @@ export default function LessonDetail() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "pending":
-                return <Badge bg="warning">Pending</Badge>;
+                return <Badge bg="secondary"><FaClock className="me-1" />Pending</Badge>;
             case "processing":
-                return <Badge bg="info">Processing</Badge>;
+                return <Badge bg="primary"><FaSpinner className="me-1 spin" />Processing</Badge>;
             case "completed":
-                return <Badge bg="success">Completed</Badge>;
+                return <Badge bg="success"><FaCheckCircle className="me-1" />Completed</Badge>;
             case "error":
-                return <Badge bg="danger">Error</Badge>;
+                return <Badge bg="danger"><FaExclamationCircle className="me-1" />Error</Badge>;
             default:
                 return <Badge bg="secondary">Not Started</Badge>;
+        }
+    };
+
+    const getProgressVariant = () => {
+        switch (lesson?.quizGenerationStatus) {
+            case "error": return "danger";
+            case "completed": return "success";
+            case "processing": return "primary";
+            default: return "secondary";
         }
     };
 
@@ -236,17 +245,36 @@ export default function LessonDetail() {
                     )}
 
                     {(lesson.quizGenerationStatus === "pending" || lesson.quizGenerationStatus === "processing") && (
-                        <div className="text-center py-3">
-                            <Spinner animation="border" variant="primary" className="mb-3" />
-                            <p className="mb-2">
-                                {lesson.quizGenerationStatus === "pending" 
+                        <div className="py-3">
+                            {/* Progress Bar */}
+                            <ProgressBar 
+                                now={lesson.progress || 0} 
+                                variant={getProgressVariant()}
+                                animated={lesson.quizGenerationStatus === "processing"}
+                                label={`${lesson.progress || 0}%`}
+                                className="mb-3"
+                            />
+                            
+                            {/* Status Message */}
+                            <p className="mb-3 text-center">
+                                <strong>Status:</strong> {lesson.progressMessage || (lesson.quizGenerationStatus === "pending" 
                                     ? "Quiz generation is queued..."
-                                    : "Generating quiz from video content..."}
+                                    : "Generating quiz from video content...")}
                             </p>
-                            <ProgressBar animated now={100} className="mb-2" />
-                            <small className="text-muted">
+                            
+                            {/* Details */}
+                            <div className="row text-muted small mb-3">
+                                <div className="col-md-6">
+                                    <strong>Questions:</strong> {lesson.numQuestions || 10}
+                                </div>
+                                <div className="col-md-6">
+                                    <strong>Difficulty:</strong> {lesson.difficulty || "medium"}
+                                </div>
+                            </div>
+                            
+                            <p className="text-center text-muted small mb-0">
                                 This may take several minutes depending on video length.
-                            </small>
+                            </p>
                         </div>
                     )}
 
@@ -320,6 +348,16 @@ export default function LessonDetail() {
                     </table>
                 </Card.Body>
             </Card>
+
+            <style>{`
+                .spin {
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 }
