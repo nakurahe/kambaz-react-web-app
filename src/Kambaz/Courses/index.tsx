@@ -8,7 +8,6 @@ import QuizEditor from "./Quizzes/EditPage";
 import QuizDetail from "./Quizzes/QuizDetail";
 import QuizPreview from "./Quizzes/QuizPreview";
 import QuizResult from "./Quizzes/QuizResult";
-import VideoQuiz from "./VideoQuiz";
 import { LessonEditor, LessonDetail } from "./Lessons";
 import { Navigate, Route, Routes, useParams, useLocation } from "react-router";
 import { FaAlignJustify } from "react-icons/fa";
@@ -46,7 +45,6 @@ export default function Courses() {
                         <Route path="Quizzes/:qid/Preview" element={<QuizPreview />} />
                         <Route path="Quizzes/:qid/result" element={<QuizResult />} />
                         <Route path="Quizzes/:qid/Editor" element={<QuizEditor />} />
-                        <Route path="VideoQuiz" element={<VideoQuiz />} />
                         <Route path="Assignments" element={<Assignments />} />
                         <Route path="Assignments/Editor" element={<AssignmentEditor />} />
                         <Route path="Assignments/:aid" element={<AssignmentEditor />} />
