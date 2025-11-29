@@ -52,7 +52,9 @@ export default function QuestionPreview({
                     <div className="ms-3">
                         <div className="fw-bold mb-2">Select the best answer:</div>
                         {question.answers.map((answer: string, answerIndex: number) => {
-                            const isSelected = userAnswers[question._id]?.includes(answer);
+                            // Use index for selection comparison (correctAnswers stores indices)
+                            const isSelected = userAnswers[question._id]?.includes(answerIndex);
+                            const isCorrect = question.correctAnswers?.includes(answerIndex);
                             return (
                                 <div key={answerIndex} className="mb-2">
                                     <Form.Check 
@@ -63,11 +65,12 @@ export default function QuestionPreview({
                                         checked={isSelected}
                                         onChange={(e) => {
                                             if (e.target.checked && onAnswerChange) {
-                                                onAnswerChange(question._id, [answer]);
+                                                // Send index instead of text content
+                                                onAnswerChange(question._id, [answerIndex]);
                                             }
                                         }}
                                     />
-                                    {isPreviewMode && question.correctAnswers && question.correctAnswers.includes(answer) && 
+                                    {isPreviewMode && isCorrect && 
                                         <span className="text-success ms-2">✓ Correct Answer</span>
                                     }
                                 </div>
