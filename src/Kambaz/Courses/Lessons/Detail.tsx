@@ -289,7 +289,7 @@ export default function LessonDetail() {
                                         View Quiz
                                     </Button>
                                 </Link>
-                                <Link to={`/Kambaz/Courses/${cid}/Quizzes/${lesson.quizId}/edit`}>
+                                <Link to={`/Kambaz/Courses/${cid}/Quizzes/${lesson.quizId}/Editor`}>
                                     <Button variant="outline-primary">
                                         Edit Quiz
                                     </Button>

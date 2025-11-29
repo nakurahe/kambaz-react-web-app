@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from "react-redux";
 import * as coursesClient from "../client";
 import * as modulesClient from "./client";
 import * as lessonsClient from "../Lessons/client";
-import { FaVideo, FaQuestionCircle } from "react-icons/fa";
+import { FaVideo } from "react-icons/fa";
 
 export default function Modules() {
     const { cid } = useParams();
@@ -110,11 +110,11 @@ export default function Modules() {
                                             <BsGripVertical className="me-2 fs-3" />
                                             <FaVideo className="me-2 text-secondary" />
                                             {lesson.name}
-                                            {lesson.quizId && (
-                                                <FaQuestionCircle className="ms-2 text-success" title="Quiz available" />
-                                            )}
                                             {lesson.quizGenerationStatus === "processing" && (
                                                 <span className="ms-2 badge bg-info">Generating quiz...</span>
+                                            )}
+                                            {lesson.quizId && lesson.quizGenerationStatus !== "processing" && (
+                                                <span className="ms-2 badge bg-success">Quiz</span>
                                             )}
                                             {currentUser.role === "FACULTY" && (
                                                 <LessonControlButtons
