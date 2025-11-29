@@ -6,6 +6,7 @@ export default function CourseNavigation() {
         { label: "Home", path: `/Kambaz/Courses/${cid}/Home` },
         { label: "Modules", path: `/Kambaz/Courses/${cid}/Modules` },
         { label: "Quizzes", path: `/Kambaz/Courses/${cid}/Quizzes` },
+        { label: "Video Quiz", path: `/Kambaz/Courses/${cid}/VideoQuiz` },
         { label: "Assignments", path: `/Kambaz/Courses/${cid}/Assignments` },
         { label: "Piazza", path: `/Kambaz/Courses/${cid}/Piazza` },
         { label: "Zoom", path: `/Kambaz/Courses/${cid}/Zoom` },
