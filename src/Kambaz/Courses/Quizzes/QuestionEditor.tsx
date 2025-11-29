@@ -40,7 +40,17 @@ export default function QuestionEditor() {
         const question = questions.find(q => q._id === questionId);
         if (question) {
             setEditingId(questionId);
-            setEditData({ ...question });
+            // Normalize correctAnswers for MultipleChoice: ensure it's an index
+            let normalizedQuestion = { ...question };
+            if (question.questionType === "MultipleChoice" && question.correctAnswers?.length > 0) {
+                const firstAnswer = question.correctAnswers[0];
+                // If it's a string (text), convert to index
+                if (typeof firstAnswer === "string") {
+                    const index = question.answers?.indexOf(firstAnswer);
+                    normalizedQuestion.correctAnswers = index >= 0 ? [index] : [0];
+                }
+            }
+            setEditData(normalizedQuestion);
             setIsNew(false);
         }
     };
@@ -54,7 +64,7 @@ export default function QuestionEditor() {
             questionType: "MultipleChoice",
             points: 1,
             answers: ["", ""],
-            correctAnswers: [],
+            correctAnswers: [0], // Use index 0 as default for MultipleChoice
         };
         setEditingId("new");
         setEditData(newQuestion);
@@ -107,8 +117,10 @@ export default function QuestionEditor() {
             payload.answers = [""];
             payload.correctAnswers = payload.correctAnswers.filter((a: any) => a !== "");
         } else if (payload.questionType === "MultipleChoice") {
-            // correctAnswers: selected answer text as string array
-            payload.correctAnswers = payload.correctAnswers[0] ? [payload.correctAnswers[0]] : [];
+            // correctAnswers: store the INDEX of the correct answer (not text)
+            // editData.correctAnswers[0] contains the index
+            const correctIndex = payload.correctAnswers[0];
+            payload.correctAnswers = (correctIndex !== undefined && correctIndex !== null) ? [correctIndex] : [];
         }
         try {
             let saved;
@@ -150,7 +162,7 @@ export default function QuestionEditor() {
                                         newData.correctAnswers = [""];
                                     } else if (type === "MultipleChoice") {
                                         newData.answers = ["", ""];
-                                        newData.correctAnswers = [""];
+                                        newData.correctAnswers = [0]; // Use index 0 as default
                                     }
                                     setEditData(newData);
                                 }}>{type}</Dropdown.Item>
@@ -182,30 +194,30 @@ export default function QuestionEditor() {
                                 <Form.Check 
                                     type="radio" 
                                     name={`correctAnswer-${editingId || 'new'}`} 
-                                    checked={editData.correctAnswers[0] === answer} 
+                                    checked={editData.correctAnswers[0] === idx} 
                                     onChange={() => {
-                                        setEditData({ ...editData, correctAnswers: [answer] });
+                                        // Store index instead of text
+                                        setEditData({ ...editData, correctAnswers: [idx] });
                                     }} 
                                     className="me-2" 
                                 />
                                 <Form.Control type="text" value={answer ?? ""} placeholder={`Answer ${idx + 1}`} style={{ width: '300px' }} onChange={e => {
                                     const newAnswers = editData.answers.map((a: string, i: number) => i === idx ? e.target.value : a);
-                                    // If answer text changes, update correctAnswers too
-                                    let correctAnswers = editData.correctAnswers;
-                                    if (editData.correctAnswers[0] === answer) {
-                                        correctAnswers = [e.target.value];
-                                    }
-                                    setEditData({ ...editData, answers: newAnswers, correctAnswers });
+                                    // Index-based correctAnswers don't need to change when text changes
+                                    setEditData({ ...editData, answers: newAnswers });
                                 }} />
                                 <Button variant="outline-danger" size="sm" className="ms-2" onClick={() => {
                                     const newAnswers = editData.answers.filter((_: string, i: number) => i !== idx);
                                     let correctAnswers = editData.correctAnswers;
-                                    if (editData.correctAnswers[0] === answer) {
-                                        correctAnswers = [];
+                                    // Adjust index if we removed an answer before the correct one
+                                    if (editData.correctAnswers[0] === idx) {
+                                        correctAnswers = []; // Clear if we removed the correct answer
+                                    } else if (editData.correctAnswers[0] > idx) {
+                                        correctAnswers = [editData.correctAnswers[0] - 1]; // Adjust index
                                     }
                                     setEditData({ ...editData, answers: newAnswers, correctAnswers });
                                 }} disabled={editData.answers.length <= 2}>Remove</Button>
-                                {editData.correctAnswers[0] === answer && (
+                                {editData.correctAnswers[0] === idx && (
                                     <span className="text-success ms-2 fw-bold">✓ Correct Answer</span>
                                 )}
                             </div>

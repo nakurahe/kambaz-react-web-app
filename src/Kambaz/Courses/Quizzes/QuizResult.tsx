@@ -84,8 +84,9 @@ export default function QuizResult() {
                     <div className="ms-3">
                         <div className="fw-bold mb-2">Your Answer:</div>
                         {question.answers.map((answer: string, answerIndex: number) => {
-                            const isUserAnswer = userAnswers.includes(answer);
-                            const isCorrectAnswer = question.correctAnswers?.includes(answer);
+                            // Use index comparison (userAnswers and correctAnswers both store indices)
+                            const isUserAnswer = userAnswers.includes(answerIndex);
+                            const isCorrectAnswer = question.correctAnswers?.includes(answerIndex);
                             
                             return (
                                 <div key={answerIndex} className="mb-2 d-flex align-items-center">

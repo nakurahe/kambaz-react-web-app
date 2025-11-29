@@ -23,6 +23,16 @@ const quizzesSlice = createSlice({
             state.quizzes = state.quizzes.map((q: any) =>
                 q._id === quiz._id ? quiz : q) as any;
         },
+        // Upsert: add if not exists, update if exists
+        upsertQuiz: (state, { payload: quiz }) => {
+            const exists = state.quizzes.some((q: any) => q._id === quiz._id);
+            if (exists) {
+                state.quizzes = state.quizzes.map((q: any) =>
+                    q._id === quiz._id ? quiz : q) as any;
+            } else {
+                state.quizzes = [...state.quizzes, quiz] as any;
+            }
+        },
         editQuiz: (state, { payload: quizId }) => {
             state.quizzes = state.quizzes.map((q: any) =>
                 q._id === quizId ? { ...q, editing: true } : q) as any;
@@ -30,6 +40,6 @@ const quizzesSlice = createSlice({
     },
 });
 
-export const { addQuiz, deleteQuiz, updateQuiz, editQuiz, setQuizzes } =
+export const { addQuiz, deleteQuiz, updateQuiz, upsertQuiz, editQuiz, setQuizzes } =
     quizzesSlice.actions;
 export default quizzesSlice.reducer;

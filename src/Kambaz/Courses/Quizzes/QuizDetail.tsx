@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Table } from "react-bootstrap";
 import { useEffect, useState } from "react";
-import { updateQuiz } from "./reducer";
+import { upsertQuiz } from "./reducer";
 import * as quizzesClient from "./client";
 import * as quizAttemptsClient from "./quizAttemptsClient";
 
@@ -13,6 +13,7 @@ export default function QuizDetail() {
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [attemptInfo, setAttemptInfo] = useState<{attemptCount: number, maxAttempts: number} | null>(null);
+    const [loading, setLoading] = useState(true);
     
     const quiz = quizzes.find((q: any) => q._id === qid);
 
@@ -22,13 +23,18 @@ export default function QuizDetail() {
                 if (qid) {
                     const fetchedQuiz = await quizzesClient.findQuizById(qid as string);
                     if (fetchedQuiz) {
-                        dispatch(updateQuiz(fetchedQuiz));
+                        // Upsert: adds if not in state, updates if already exists
+                        dispatch(upsertQuiz(fetchedQuiz));
                     }
                 }
             } catch (error) {
                 console.error("Failed to fetch quiz:", error);
+            } finally {
+                setLoading(false);
             }
         };
+        
+        // Always fetch to ensure we have latest data
         fetchQuiz();
     }, [qid, dispatch]);
 
@@ -52,18 +58,20 @@ export default function QuizDetail() {
         }
     }, [currentUser, qid, quiz]);
     
-    if (!quiz && quizzes.length > 0) {
+    // Show loading while fetching
+    if (loading) {
         return (
-            <div className="alert alert-danger">
-                Quiz not found.
+            <div className="text-center p-4">
+                Loading...
             </div>
         );
     }
 
+    // Quiz not found after loading completed
     if (!quiz) {
         return (
-            <div className="text-center p-4">
-                Loading...
+            <div className="alert alert-danger">
+                Quiz not found.
             </div>
         );
     }
