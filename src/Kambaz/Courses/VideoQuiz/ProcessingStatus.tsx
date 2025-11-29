@@ -19,7 +19,7 @@ export default function ProcessingStatus({ job, onRetry, onRefresh }: Processing
         if (job.status === "pending" || job.status === "processing") {
             const interval = setInterval(() => {
                 onRefresh?.();
-            }, 3000); // Poll every 3 seconds
+            }, 2000); // Poll every 2 seconds for more responsive updates
             
             return () => clearInterval(interval);
         }
