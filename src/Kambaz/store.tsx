@@ -7,6 +7,7 @@ import coursesReducer from "./Courses/reducer";
 import enrollmentsReducer from "./Enrollments/reducer";
 import peopleReducer from "./Courses/People/reducer";
 import videoQuizReducer from "./Courses/VideoQuiz/reducer";
+import lessonsReducer from "./Courses/Lessons/reducer";
 
 const store = configureStore({
     reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
         enrollmentsReducer,
         peopleReducer,
         videoQuizReducer,
+        lessonsReducer,
     },
 });
 export default store;

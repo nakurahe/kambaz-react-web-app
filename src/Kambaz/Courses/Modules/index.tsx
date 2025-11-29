@@ -2,27 +2,40 @@ import { BsGripVertical } from "react-icons/bs";
 import ModulesControls from "./ModulesControls";
 import { FormControl, ListGroup } from "react-bootstrap";
 import ModulesControlButtons from "./ModuleControlButtons";
-import { useParams } from "react-router";
+import LessonControlButtons from "./LessonControlButtons";
+import { useParams, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
+import { setLessons, deleteLesson as deleteLessonAction } from "../Lessons/reducer";
 import { useSelector, useDispatch } from "react-redux";
 import * as coursesClient from "../client";
 import * as modulesClient from "./client";
+import * as lessonsClient from "../Lessons/client";
+import { FaVideo, FaQuestionCircle } from "react-icons/fa";
 
 export default function Modules() {
     const { cid } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [moduleName, setModuleName] = useState("");
     const { modules } = useSelector((state: any) => state.modulesReducer);
+    const { lessons } = useSelector((state: any) => state.lessonsReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
 
     const fetchModules = async () => {
         const modules = await coursesClient.findModulesForCourse(cid as string);
         dispatch(setModules(modules));
     };
+
+    const fetchLessons = async () => {
+        const allLessons = await lessonsClient.findLessonsForCourse(cid as string);
+        dispatch(setLessons(allLessons));
+    };
+
     useEffect(() => {
         fetchModules();
-    }, []);
+        fetchLessons();
+    }, [cid]);
 
     const createModuleForCourse = async () => {
         if (!cid) return;
@@ -40,6 +53,19 @@ export default function Modules() {
     const saveModule = async (module: any) => {
         await modulesClient.updateModule(module);
         dispatch(updateModule(module));
+    };
+
+    const removeLesson = async (lessonId: string) => {
+        await lessonsClient.deleteLesson(lessonId);
+        dispatch(deleteLessonAction(lessonId));
+    };
+
+    const getLessonsForModule = (moduleId: string) => {
+        return lessons.filter((lesson: any) => lesson.module === moduleId);
+    };
+
+    const handleLessonClick = (moduleId: string, lessonId: string) => {
+        navigate(`/Kambaz/Courses/${cid}/Modules/${moduleId}/Lessons/${lessonId}`);
     };
 
     return (
@@ -71,36 +97,36 @@ export default function Modules() {
                                     editModule={(moduleId) => dispatch(editModule(moduleId))}
                                 />}
                             </div>
-                            {module.lessons && (
+                            {/* Render lessons from the lessons reducer */}
+                            {getLessonsForModule(module._id).length > 0 && (
                                 <ListGroup className="wd-lessons rounded-0">
-                                    {module.lessons.map((lesson: any, lessonIndex: number) => (
-                                        <ListGroup.Item key={lesson._id || `lesson-${module._id}-${lessonIndex}`} className="wd-lesson p-3 ps-1">
+                                    {getLessonsForModule(module._id).map((lesson: any) => (
+                                        <ListGroup.Item 
+                                            key={lesson._id} 
+                                            className="wd-lesson p-3 ps-1"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() => handleLessonClick(module._id, lesson._id)}
+                                        >
                                             <BsGripVertical className="me-2 fs-3" />
-                                            {!module.editing && lesson.name}
-                                            {module.editing && (
-                                                <FormControl className="w-50 d-inline-block"
-                                                    onChange={(e) =>
-                                                        dispatch(
-                                                            updateModule({ ...module, name: e.target.value })
-                                                        )
-                                                    }
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === "Enter") {
-                                                            const updatedModule = { ...module, editing: false, name: (e.target as HTMLInputElement).value };
-                                                            dispatch(updateModule(updatedModule));
-                                                            saveModule(updatedModule);
-                                                        }
-                                                    }}
-                                                    defaultValue={module.name} />
+                                            <FaVideo className="me-2 text-secondary" />
+                                            {lesson.name}
+                                            {lesson.quizId && (
+                                                <FaQuestionCircle className="ms-2 text-success" title="Quiz available" />
                                             )}
-                                            {currentUser.role === "FACULTY" && <ModulesControlButtons
-                                                moduleId={module._id}
-                                                deleteModule={(moduleId) => removeModule(moduleId)}
-                                                editModule={(moduleId) => dispatch(editModule(moduleId))}
-                                            />}
+                                            {lesson.quizGenerationStatus === "processing" && (
+                                                <span className="ms-2 badge bg-info">Generating quiz...</span>
+                                            )}
+                                            {currentUser.role === "FACULTY" && (
+                                                <LessonControlButtons
+                                                    moduleId={module._id}
+                                                    lessonId={lesson._id}
+                                                    deleteLesson={() => removeLesson(lesson._id)}
+                                                />
+                                            )}
                                         </ListGroup.Item>
                                     ))}
-                                </ListGroup>)}
+                                </ListGroup>
+                            )}
                         </ListGroup.Item>))}
             </ListGroup>
         </div>
