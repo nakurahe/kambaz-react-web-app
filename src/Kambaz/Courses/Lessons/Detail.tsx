@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Card, Button, Alert, Spinner, Badge, ProgressBar } from "react-bootstrap";
 import { FaArrowLeft, FaQuestionCircle, FaEdit, FaTrash, FaSync, FaClock, FaCheckCircle, FaExclamationCircle, FaSpinner } from "react-icons/fa";
 import { setCurrentLesson, deleteLesson as deleteLessonAction } from "./reducer";
@@ -16,6 +16,7 @@ export default function LessonDetail() {
     const [error, setError] = useState<string | null>(null);
     const [pollingStatus, setPollingStatus] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
 
     useEffect(() => {
         const fetchLesson = async () => {
@@ -169,29 +170,31 @@ export default function LessonDetail() {
                         <p className="text-muted">{lesson.description}</p>
                     )}
                 </div>
-                <div className="d-flex gap-2">
-                    <Button 
-                        variant="outline-primary"
-                        onClick={() => navigate(`/Kambaz/Courses/${cid}/Modules/${lesson.module}/Lessons/${lid}/edit`)}
-                    >
-                        <FaEdit className="me-2" />
-                        Edit
-                    </Button>
-                    <Button 
-                        variant="outline-danger"
-                        onClick={handleDelete}
-                        disabled={deleting}
-                    >
-                        {deleting ? (
-                            <Spinner animation="border" size="sm" />
-                        ) : (
-                            <>
-                                <FaTrash className="me-2" />
-                                Delete
-                            </>
-                        )}
-                    </Button>
-                </div>
+                {currentUser?.role === "FACULTY" && (
+                    <div className="d-flex gap-2">
+                        <Button 
+                            variant="outline-primary"
+                            onClick={() => navigate(`/Kambaz/Courses/${cid}/Modules/${lesson.module}/Lessons/${lid}/edit`)}
+                        >
+                            <FaEdit className="me-2" />
+                            Edit
+                        </Button>
+                        <Button 
+                            variant="outline-danger"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                        >
+                            {deleting ? (
+                                <Spinner animation="border" size="sm" />
+                            ) : (
+                                <>
+                                    <FaTrash className="me-2" />
+                                    Delete
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Video Player */}
@@ -237,10 +240,12 @@ export default function LessonDetail() {
                     {lesson.quizGenerationStatus === "none" && (
                         <div className="text-center py-3">
                             <p className="text-muted mb-3">No quiz has been generated for this lesson yet.</p>
-                            <Button variant="danger" onClick={handleGenerateQuiz}>
-                                <FaSync className="me-2" />
-                                Generate Quiz from Video
-                            </Button>
+                            {currentUser?.role === "FACULTY" && (
+                                <Button variant="danger" onClick={handleGenerateQuiz}>
+                                    <FaSync className="me-2" />
+                                    Generate Quiz from Video
+                                </Button>
+                            )}
                         </div>
                     )}
 
@@ -289,11 +294,13 @@ export default function LessonDetail() {
                                         View Quiz
                                     </Button>
                                 </Link>
-                                <Link to={`/Kambaz/Courses/${cid}/Quizzes/${lesson.quizId}/Editor`}>
-                                    <Button variant="outline-primary">
-                                        Edit Quiz
-                                    </Button>
-                                </Link>
+                                {currentUser?.role === "FACULTY" && (
+                                    <Link to={`/Kambaz/Courses/${cid}/Quizzes/${lesson.quizId}/Editor`}>
+                                        <Button variant="outline-primary">
+                                            Edit Quiz
+                                        </Button>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     )}
@@ -303,10 +310,12 @@ export default function LessonDetail() {
                             <Alert variant="danger" className="mb-3">
                                 {lesson.quizGenerationError || "Quiz generation failed. Please try again."}
                             </Alert>
-                            <Button variant="danger" onClick={handleGenerateQuiz}>
-                                <FaSync className="me-2" />
-                                Retry Quiz Generation
-                            </Button>
+                            {currentUser?.role === "FACULTY" && (
+                                <Button variant="danger" onClick={handleGenerateQuiz}>
+                                    <FaSync className="me-2" />
+                                    Retry Quiz Generation
+                                </Button>
+                            )}
                         </div>
                     )}
                 </Card.Body>

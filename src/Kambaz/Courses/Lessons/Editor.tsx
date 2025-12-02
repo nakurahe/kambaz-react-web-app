@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Navigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { Form, Button, ProgressBar, Alert, Card, Spinner } from "react-bootstrap";
 import { FaCloudUploadAlt, FaVideo, FaArrowLeft } from "react-icons/fa";
@@ -11,6 +11,12 @@ export default function LessonEditor() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { lessons } = useSelector((state: any) => state.lessonsReducer);
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+
+    // Redirect students away from lesson editor
+    if (currentUser?.role !== "FACULTY") {
+        return <Navigate to={`/Kambaz/Courses/${cid}/Modules`} replace />;
+    }
     
     const existingLesson = lid ? lessons.find((l: any) => l._id === lid) : null;
     const isEditing = !!lid && !!existingLesson;

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Navigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { addQuiz, updateQuiz, setQuizzes } from "./reducer";
 import { useState, useEffect } from "react";
@@ -12,6 +12,12 @@ export default function QuizEditor() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { quizzes } = useSelector((state: any) => state.quizzesReducer);
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+
+    // Redirect students away from quiz editor
+    if (currentUser?.role !== "FACULTY") {
+        return <Navigate to={`/Kambaz/Courses/${cid}/Quizzes`} replace />;
+    }
     
     const existingQuiz = qid ? quizzes.find((q: any) => q._id === qid) : null;
     const isEditing = !!qid && !!existingQuiz;

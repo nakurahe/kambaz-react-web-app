@@ -70,8 +70,11 @@ export default function Modules() {
 
     return (
         <div className="wd-modules">
-            <ModulesControls setModuleName={setModuleName} moduleName={moduleName}
-                addModule={createModuleForCourse} /><br /><br /><br /><br />
+            {currentUser?.role === "FACULTY" && (
+                <ModulesControls setModuleName={setModuleName} moduleName={moduleName}
+                    addModule={createModuleForCourse} />
+            )}
+            <br /><br /><br /><br />
             <ListGroup className="rounded-0" id="wd-modules">
                 {modules
                     .map((module: any) => (
